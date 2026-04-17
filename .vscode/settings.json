@@ -1,0 +1,14 @@
+{
+  "css.customData": [".vscode/tailwind-v4.json"],
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "tailwindCSS.experimental.classRegex": [
+    ["@apply\\s+([^;]+);", "([^\\s]+)"]
+  ],
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.interpreterPath": "/usr/bin/python3",
+  "python.analysis.extraPaths": [
+    "/Users/sujithputta/Library/Python/3.9/lib/python/site-packages"
+  ]
+}
