@@ -120,13 +120,14 @@ export default function ProfilePage() {
                  label="App Settings" 
                  hasArrow
                />
-               <div 
+               <button 
                  onClick={handleLogout}
-                 className="p-5 flex items-center gap-4 text-accent hover:bg-white/5 transition-colors cursor-pointer"
+                 className="w-full p-5 flex items-center gap-4 text-accent hover:bg-white/5 transition-colors cursor-pointer text-left"
+                 aria-label="Sign out of your account"
                >
                   <LogOut size={20} />
                   <span className="font-black uppercase tracking-widest text-xs">Sign Out</span>
-               </div>
+               </button>
             </div>
           </section>
         </div>
@@ -148,9 +149,11 @@ function SettingItem({ icon, label, desc, toggle, onToggle, hasArrow }: {
   hasArrow?: boolean
 }) {
   return (
-    <div 
-      className="p-5 flex items-center justify-between border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer group"
+    <button 
+      className="w-full p-5 flex items-center justify-between border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer group text-left"
       onClick={onToggle}
+      disabled={!onToggle}
+      aria-label={`${label}${desc ? `: ${desc}` : ''}${toggle !== undefined ? ` - Currently ${toggle ? 'enabled' : 'disabled'}` : ''}`}
     >
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-text-muted group-hover:text-primary transition-colors">
@@ -163,15 +166,15 @@ function SettingItem({ icon, label, desc, toggle, onToggle, hasArrow }: {
       </div>
       
       {toggle !== undefined ? (
-        <div className={`w-12 h-6 rounded-full p-1 transition-colors ${toggle ? 'bg-primary' : 'bg-white/10'}`}>
+        <div className={`w-12 h-6 rounded-full p-1 transition-colors ${toggle ? 'bg-primary' : 'bg-white/10'}`} aria-hidden="true">
           <motion.div 
             animate={{ x: toggle ? 24 : 0 }}
             className="w-4 h-4 bg-white rounded-full shadow-sm"
           />
         </div>
       ) : hasArrow ? (
-        <ChevronRight size={16} className="text-text-muted group-hover:text-white transition-colors" />
+        <ChevronRight size={16} className="text-text-muted group-hover:text-white transition-colors" aria-hidden="true" />
       ) : null}
-    </div>
+    </button>
   );
 }
