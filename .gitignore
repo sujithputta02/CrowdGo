@@ -9,6 +9,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Testing
+coverage/
+*.tsbuildinfo
+
 # Secrets & Keys
 *-key.json
 *.key
