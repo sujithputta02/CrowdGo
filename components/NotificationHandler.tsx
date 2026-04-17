@@ -14,9 +14,12 @@ export function NotificationHandler() {
     }
   }, [token]);
 
-  if (error) {
-    console.error('❌ Notification Error:', error);
-  }
+  useEffect(() => {
+    if (error) {
+      // Log error but don't show to user - notifications are optional
+      console.warn('⚠️ Notifications unavailable:', error);
+    }
+  }, [error]);
 
   return null; // This component doesn't render anything
 }

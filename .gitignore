@@ -19,5 +19,10 @@ secrets.json
 .env.test.local
 .env.production.local
 
+# Firebase
+.firebase/
+firebase-debug.log
+.firebaserc
+
 # OS
 .DS_Store
