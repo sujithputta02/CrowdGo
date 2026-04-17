@@ -8,6 +8,13 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const LIMIT = 50; // Max requests per window
 const WINDOW_MS = 60 * 1000; // 1 minute window
 
+/**
+ * Production Security Proxy
+ * Implements Tier-1 security measures: Rate Limiting, Header Injection, and Boundary Protection.
+ * 
+ * @param request - The incoming Next.js request object
+ * @returns NextResponse with security headers or 429 Rate Limit error
+ */
 export function proxy(request: NextRequest) {
   // Only rate limit API routes
   if (request.nextUrl.pathname.startsWith('/api')) {
@@ -36,6 +43,10 @@ export function proxy(request: NextRequest) {
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-XSS-Protection', '1; mode=block');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    
+    // Advanced Production Headers
+    response.headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' *.google.com *.googleapis.com *.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' data: *.googleapis.com *.gstatic.com; connect-src 'self' *.googleapis.com firebase.googleapis.com");
+    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self)');
     
     return response;
   }

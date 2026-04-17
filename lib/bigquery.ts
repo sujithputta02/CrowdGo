@@ -36,7 +36,9 @@ const SURGE_CACHE_TTL = 5000; // 5 seconds
 
 export const BigQueryService = {
   /**
-   * Streams a row of event data to BigQuery
+   * Streams a row of event data to BigQuery for long-term analytics and surge prediction history.
+   * 
+   * @param event - The event object containing type, payload, and stadium context
    */
   async streamEvent(event: {
     type: string,
@@ -93,7 +95,11 @@ export const BigQueryService = {
   },
 
   /**
-   * Calculates the current surge momentum based on recent history
+   * Calculates the current surge momentum based on recent history.
+   * Compares the frequency of events (Gate Scans/POS) in the last 15 minutes.
+   * 
+   * @param eventType - The category of events to analyze ('GATE_SCAN' or 'POS_SALE')
+   * @returns The count of recent events, used as a momentum multiplier for wait times
    */
   async getHistoricalSurgeTrend(eventType: string): Promise<number> {
     try {

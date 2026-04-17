@@ -140,6 +140,9 @@ export default function LoginPage() {
                initial={{ opacity: 0, x: -10 }}
                animate={{ opacity: 1, x: 0 }}
                className="mb-8 p-4 rounded-xl bg-accent/10 border border-accent/20 text-accent text-xs font-bold uppercase tracking-widest text-center"
+               role="alert"
+               aria-live="polite"
+               aria-atomic="true"
              >
                 {error}
              </motion.div>
@@ -150,6 +153,9 @@ export default function LoginPage() {
                initial={{ opacity: 0, x: -10 }}
                animate={{ opacity: 1, x: 0 }}
                className="mb-8 p-4 rounded-xl bg-secondary/10 border border-secondary/20 text-secondary text-xs font-bold uppercase tracking-widest text-center"
+               role="status"
+               aria-live="polite"
+               aria-atomic="true"
              >
                 {message}
              </motion.div>
@@ -158,25 +164,33 @@ export default function LoginPage() {
           <form onSubmit={handleEmailLogin} className="space-y-6">
             <div className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                <label htmlFor="email" className="sr-only">Email address</label>
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" size={18} aria-hidden="true" />
                 <input
+                  id="email"
                   type="email"
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary transition-all font-medium text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium text-sm"
                   required
+                  aria-label="Email address"
+                  aria-required="true"
                 />
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                <label htmlFor="password" className="sr-only">Password</label>
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" size={18} aria-hidden="true" />
                 <input
+                  id="password"
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary transition-all font-medium text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium text-sm"
                   required
+                  aria-label="Password"
+                  aria-required="true"
                 />
               </div>
               <div className="text-right px-2">
@@ -193,10 +207,11 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-5 bg-primary text-white rounded-2xl font-black text-lg shadow-2xl shadow-primary/30 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="w-full py-5 bg-primary text-white rounded-2xl font-black text-lg shadow-2xl shadow-primary/30 flex items-center justify-center gap-3 active:scale-[0.98] transition-all disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background"
+              aria-busy={loading}
             >
               {loading ? 'LOCKING IN...' : 'CONTINUE W FLOW'}
-              <ArrowRight size={20} />
+              <ArrowRight size={20} aria-hidden="true" />
             </button>
           </form>
 
@@ -204,9 +219,10 @@ export default function LoginPage() {
             <button 
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full py-4 bg-white text-black rounded-2xl flex items-center justify-center gap-3 text-sm font-black uppercase tracking-widest hover:bg-neutral-200 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-4 bg-white text-black rounded-2xl flex items-center justify-center gap-3 text-sm font-black uppercase tracking-widest hover:bg-neutral-200 transition-all active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-background"
+              aria-busy={loading}
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"/>
@@ -217,9 +233,10 @@ export default function LoginPage() {
             <button 
               onClick={handleAnonymousLogin}
               disabled={loading}
-              className="w-full py-4 glass-card border-white/10 flex items-center justify-center gap-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-4 glass-card border-white/10 flex items-center justify-center gap-3 text-sm font-black uppercase tracking-widest hover:bg-white/5 transition-all active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-background"
+              aria-busy={loading}
             >
-              <UserPlus size={18} />
+              <UserPlus size={18} aria-hidden="true" />
               Experience Anonymously
             </button>
           </div>
@@ -242,7 +259,8 @@ export default function LoginPage() {
           transition={{ delay: 0.5 }}
           className="mt-12 text-center text-[10px] font-black uppercase text-text-muted tracking-[0.4em]"
         >
-          // VERSION 1.1 // NO CAP //
+          {/* VERSION 1.1 // NO CAP */}
+          VERSION 1.1 // NO CAP
         </motion.p>
       </main>
     </div>

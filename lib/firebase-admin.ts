@@ -24,3 +24,4 @@ export function getFirebaseAdmin() {
 
 export const adminAuth = () => getFirebaseAdmin().auth();
 export const adminMessaging = () => getFirebaseAdmin().messaging();
+export const db = () => getFirebaseAdmin().firestore();

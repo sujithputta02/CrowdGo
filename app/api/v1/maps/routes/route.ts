@@ -6,7 +6,7 @@ const GOOGLE_ROUTES_API_URL = "https://routes.googleapis.com/directions/v2:compu
 
 export async function POST(req: NextRequest) {
   try {
-    const { origin, destination, intermediates, travelMode = "WALKING" } = await req.json();
+    const { origin, destination, intermediates, travelMode = "WALKING", accessibleOnly = false } = await req.json();
     
     let apiKey: string;
     try {
@@ -14,6 +14,27 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       MonitoringService.log("Secret Manager Access Failed. Using Mock Route.", "WARNING");
       return NextResponse.json(generateMockRoute());
+    }
+
+    const requestBody: any = {
+      origin: { location: { latLng: origin } },
+      destination: { location: { latLng: destination } },
+      intermediates: intermediates?.map((i: any) => ({ location: { latLng: i } })),
+      travelMode,
+      computeAlternativeRoutes: false,
+      routeModifiers: {
+        avoidTolls: false,
+        avoidHighways: false,
+        avoidFerries: accessibleOnly, // Avoid ferries for accessible routes
+      },
+      languageCode: "en-US",
+      units: "METRIC",
+    };
+
+    // Add accessibility constraints
+    if (accessibleOnly) {
+      requestBody.routeModifiers.avoidStairs = true;
+      requestBody.routeModifiers.wheelchairAccessible = true;
     }
 
     const response = await fetch(GOOGLE_ROUTES_API_URL, {
@@ -25,20 +46,7 @@ export async function POST(req: NextRequest) {
         "Origin": "http://localhost:3000",
         "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline",
       },
-      body: JSON.stringify({
-        origin: { location: { latLng: origin } },
-        destination: { location: { latLng: destination } },
-        intermediates: intermediates?.map((i: any) => ({ location: { latLng: i } })),
-        travelMode,
-        computeAlternativeRoutes: false,
-        routeModifiers: {
-          avoidTolls: false,
-          avoidHighways: false,
-          avoidFerries: false,
-        },
-        languageCode: "en-US",
-        units: "METRIC",
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {

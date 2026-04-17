@@ -76,7 +76,8 @@ export default function LandingPage() {
             transition={{ ...spring, delay: 0.1 }}
           >
             <span className="px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-bold tracking-widest uppercase mb-8 inline-block">
-              // Version 1.1 Out Now
+              {/* Version 1.1 Out Now */}
+              Version 1.1 Out Now
             </span>
           </motion.div>
 

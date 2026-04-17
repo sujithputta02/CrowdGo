@@ -185,8 +185,21 @@ export default function AuraMap({
   }, [polyline, map, isNightMode]);
 
   return (
-    <div className="w-full h-full relative min-h-[500px] bg-black rounded-[40px] overflow-hidden">
+    <div 
+      className="w-full h-full relative min-h-[500px] bg-black rounded-[40px] overflow-hidden"
+      role="application"
+      aria-label="Interactive Stadium Map with real-time crowd flow"
+    >
       <div ref={mapRef} className="w-full h-full absolute inset-0" />
+      
+      {/* Live region for real-time accessibility updates */}
+      <div 
+        className="sr-only" 
+        role="status" 
+        aria-live="polite"
+      >
+        {activeCategory !== 'all' ? `Filtering map by ${activeCategory}` : 'Showing all stadium points of interest'}
+      </div>
       
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl z-20">

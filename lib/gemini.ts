@@ -9,11 +9,15 @@ import { MonitoringService } from './monitoring';
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'crowdgo-493512';
 const LOCATION = 'us-central1';
-const MODEL_ID = 'gemini-1.5-flash-001';
+const MODEL_ID = 'gemini-1.5-flash';
 
 export const GeminiService = {
   /**
-   * Generates a natural language explanation for a navigation recommendation
+   * Generates a natural language explanation for a navigation recommendation.
+   * Translates raw crowd data into an empathetic "Aura" suggestion for the fan.
+   * 
+   * @param context - The crowd state including facility info, wait times, and surge status
+   * @returns A one-sentence AI-generated navigation tip, or null if reasoning fails
    */
   async generateAuraReason(context: {
     facilityName: string,
@@ -35,8 +39,8 @@ export const GeminiService = {
 
       if (!accessToken) throw new Error('Failed to obtain access token');
 
-      // 2. Prepare REST Request
-      const url = `https://${LOCATION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL_ID}:streamGenerateContent`;
+      // 2. Prepare REST Request (Using v1beta1 for wider model coverage)
+      const url = new URL(`https://${LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL_ID}:streamGenerateContent`);
       
       const prompt = `
         You are the "Aura Intelligence" for Wankhede Stadium (IPL).
@@ -73,6 +77,7 @@ export const GeminiService = {
 
       if (!response.ok) {
         const errText = await response.text();
+        console.error(`[Gemini Error] HTTP ${response.status} - ID: ${PROJECT_ID} - URL: ${url.toString()}`);
         throw new Error(`Vertex AI REST Error: ${response.status} - ${errText}`);
       }
 
