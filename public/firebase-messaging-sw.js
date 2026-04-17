@@ -14,7 +14,6 @@ self.addEventListener('message', (event) => {
       const messaging = firebase.messaging();
       
       messaging.onBackgroundMessage((payload) => {
-        console.log('[firebase-messaging-sw.js] Received background message ', payload);
         const notificationTitle = payload.notification?.title || 'New notification';
         const notificationOptions = {
           body: payload.notification?.body || '',
@@ -23,18 +22,16 @@ self.addEventListener('message', (event) => {
         self.registration.showNotification(notificationTitle, notificationOptions);
       });
     } catch (error) {
-      console.error('[firebase-messaging-sw.js] Failed to initialize Firebase:', error);
+      // Silent error handling in production
     }
   }
 });
 
 // Activate immediately
 self.addEventListener('install', (event) => {
-  console.log('[firebase-messaging-sw.js] Service Worker installing...');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[firebase-messaging-sw.js] Service Worker activated');
   event.waitUntil(clients.claim());
 });

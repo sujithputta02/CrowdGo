@@ -9,7 +9,6 @@ export function useNotifications() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window) || !messaging) return;
     if (!('serviceWorker' in navigator)) {
-      console.warn('Service Workers not supported in this browser');
       return;
     }
 
@@ -22,7 +21,6 @@ export function useNotifications() {
 
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-          console.log('Notification permission not granted');
           return;
         }
 
@@ -35,9 +33,6 @@ export function useNotifications() {
             scope: '/',
             updateViaCache: 'none'
           });
-          console.log('[useNotifications] Service Worker registered:', registration);
-        } else {
-          console.log('[useNotifications] Service Worker already registered:', registration);
         }
 
         // Wait for service worker to be active
@@ -90,14 +85,10 @@ export function useNotifications() {
         const currentToken = await getToken(messaging as Messaging, tokenOptions);
 
         if (currentToken) {
-          console.log('✅ FCM Token obtained:', currentToken);
           setToken(currentToken);
           // In a real app, you'd send this token to your server to store it
-        } else {
-          console.warn('No registration token available. Request permission to generate one.');
         }
       } catch (err) {
-        console.error('An error occurred while retrieving token:', err);
         setError((err as Error).message);
       }
     };
@@ -106,10 +97,13 @@ export function useNotifications() {
 
     // Listen for foreground messages
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('[useNotifications] Message received in foreground:', payload);
       // In a real app, you'd trigger a custom UI Alert or Toast here
       if (payload.notification) {
-        alert(`${payload.notification.title}\n${payload.notification.body}`);
+        // Show notification silently or with custom UI
+        new Notification(payload.notification.title || 'Notification', {
+          body: payload.notification.body,
+          icon: '/icons/vibe-alert.png'
+        });
       }
     });
 
