@@ -9,7 +9,7 @@ import { MonitoringService } from './monitoring';
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'crowdgo-493512';
 const LOCATION = 'us-central1';
-const MODEL_ID = 'gemini-1.5-flash-002';
+const MODEL_ID = 'gemini-1.5-flash-001';
 
 export const GeminiService = {
   /**

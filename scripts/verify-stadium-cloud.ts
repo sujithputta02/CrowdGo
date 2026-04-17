@@ -1,3 +1,5 @@
+import { config } from 'dotenv';
+config({ path: '.env.local' });
 import { db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { BigQueryService } from '../lib/bigquery';
@@ -17,8 +19,11 @@ async function runHealthCheck() {
   try {
     const key = await getSecret('GOOGLE_MAPS_API_KEY');
     console.log('✅ SECRET MANAGER: GOOGLE_MAPS_API_KEY reachable.');
-  } catch (e) {
+  } catch (e: any) {
     console.error('❌ SECRET MANAGER: Failed to fetch keys.');
+    console.error(`   Error Detail: ${e.message}`);
+    const envExists = !!(process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+    console.log(`   Local ENV Fallback Available: ${envExists}`);
     failures++;
   }
 

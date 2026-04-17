@@ -37,6 +37,7 @@
     "eslint": "latest",
     "eslint-config-next": "latest",
     "firebase-tools": "^15.15.0",
+    "ts-node": "^10.9.2",
     "typescript": "latest"
   }
 }
