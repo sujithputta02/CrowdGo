@@ -42,7 +42,7 @@ export default function AppPage() {
     <div className="min-h-screen pb-32 md:pb-12 md:pt-8 bg-transparent">
       <AppHeader activeMatch={activeMatch} />
 
-      <main className="container mx-auto px-6 py-6 max-w-[1400px]">
+      <main id="main-content" className="container mx-auto px-6 py-6 max-w-[1400px]">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
           {/* LEFT COLUMN: Ticket & Actions */}

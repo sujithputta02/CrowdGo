@@ -184,11 +184,9 @@ export default function AuraMap({
 
         if (distance < 20000) {
           map.fitBounds(bounds, 80); // Increased padding
-        } else {
-          logger.warn('AuraMap route too far from venue, maintaining venue focus', { 
-            distance: Math.round(distance) 
-          });
         }
+        // Note: Routes >20km from venue are intentionally not fitted to bounds
+        // to maintain focus on the stadium area (prevents zooming out to sea)
       }
 
       return () => {

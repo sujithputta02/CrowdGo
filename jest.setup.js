@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import 'jest-axe/extend-expect';
 
 // Simple polyfills for Web APIs in Node environment
 // These are minimal implementations just for testing Next.js API routes

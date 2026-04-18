@@ -45,7 +45,12 @@ describe('Auth Middleware', () => {
 
       const result = await verifyToken(request);
 
-      expect(result).toEqual({ uid: 'user-123' });
+      expect(result).toEqual({
+        uid: 'user-123',
+        email: undefined,
+        role: 'user',
+        customClaims: { uid: 'user-123' },
+      });
       expect(mockVerifyIdToken).toHaveBeenCalledWith('valid-token');
     });
 
@@ -347,6 +352,130 @@ describe('Auth Middleware', () => {
       expect(results).toHaveLength(10);
       expect(results.every(r => r?.uid === 'user-concurrent')).toBe(true);
       expect(mockVerifyIdToken).toHaveBeenCalledTimes(10);
+    });
+  });
+});
+
+// Additional tests for RBAC features
+describe('RBAC Features', () => {
+  // Mock audit logger
+  jest.mock('@/lib/security/audit-logger', () => ({
+    logAuthAttempt: jest.fn().mockResolvedValue(undefined),
+    logAuthorizationCheck: jest.fn().mockResolvedValue(undefined),
+  }));
+
+  // Mock rate limiter
+  jest.mock('@/lib/rate-limiter', () => ({
+    getClientIp: jest.fn(() => '192.168.1.1'),
+  }));
+
+  // Mock ApiResponseHandler.forbidden
+  beforeAll(() => {
+    const { ApiResponseHandler } = require('@/lib/api-response');
+    ApiResponseHandler.forbidden = jest.fn((message) => ({
+      status: 403,
+      json: async () => ({ success: false, error: { message } }),
+    }));
+  });
+
+  describe('requireRole', () => {
+    it('should allow user with correct role', async () => {
+      const { requireRole } = require('@/lib/auth-middleware');
+      
+      mockVerifyIdToken.mockResolvedValue({
+        uid: 'admin-123',
+        email: 'admin@example.com',
+        role: 'admin',
+      });
+
+      const request = new NextRequest('http://localhost:3000/api/admin', {
+        headers: {
+          Authorization: 'Bearer admin-token',
+        },
+      });
+
+      const result = await requireRole(request, ['admin']);
+      expect(result.user).not.toBeNull();
+      expect(result.response).toBeNull();
+      expect(result.user?.role).toBe('admin');
+    });
+
+    it('should reject user with insufficient role', async () => {
+      const { requireRole } = require('@/lib/auth-middleware');
+      
+      mockVerifyIdToken.mockResolvedValue({
+        uid: 'user-123',
+        email: 'user@example.com',
+        role: 'user',
+      });
+
+      const request = new NextRequest('http://localhost:3000/api/admin', {
+        headers: {
+          Authorization: 'Bearer user-token',
+        },
+      });
+
+      const result = await requireRole(request, ['admin']);
+      expect(result.user).toBeNull();
+      expect(result.response).not.toBeNull();
+    });
+
+    it('should allow multiple roles', async () => {
+      const { requireRole } = require('@/lib/auth-middleware');
+      
+      mockVerifyIdToken.mockResolvedValue({
+        uid: 'ops-123',
+        email: 'ops@example.com',
+        role: 'ops',
+      });
+
+      const request = new NextRequest('http://localhost:3000/api/ops', {
+        headers: {
+          Authorization: 'Bearer ops-token',
+        },
+      });
+
+      const result = await requireRole(request, ['admin', 'ops']);
+      expect(result.user).not.toBeNull();
+      expect(result.response).toBeNull();
+    });
+  });
+
+  describe('checkResourceOwnership', () => {
+    it('should allow admin to access any resource', () => {
+      const { checkResourceOwnership } = require('@/lib/auth-middleware');
+      
+      const admin = {
+        uid: 'admin-123',
+        role: 'admin',
+      };
+
+      const canAccess = checkResourceOwnership(admin, 'user-456');
+      expect(canAccess).toBe(true);
+    });
+
+    it('should allow user to access their own resource', () => {
+      const { checkResourceOwnership } = require('@/lib/auth-middleware');
+      
+      const user = {
+        uid: 'user-123',
+        role: 'user',
+      };
+
+      const canAccess = checkResourceOwnership(user, 'user-123');
+      expect(canAccess).toBe(true);
+    });
+
+    it('should deny user access to other user resources', () => {
+      const { checkResourceOwnership } = require('@/lib/auth-middleware');
+      
+      const user = {
+        uid: 'user-123',
+        role: 'user',
+      };
+
+      const canAccess = checkResourceOwnership(user, 'user-456');
+      expect(canAccess).toBe(false);
     });
   });
 });

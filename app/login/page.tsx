@@ -115,7 +115,7 @@ export default function LoginPage() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-secondary/10 rounded-full blur-[120px]" />
       </div>
 
-      <main className="w-full max-w-md relative z-10">
+      <main id="main-content" className="w-full max-w-md relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}

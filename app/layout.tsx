@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { NotificationHandler } from "@/components/NotificationHandler";
+import { HighContrastProvider } from "@/lib/contexts/HighContrastContext";
+import HighContrastToggle from "@/components/HighContrastToggle";
+import SkipLink from "@/components/SkipLink";
+import KeyboardShortcutsWrapper from "@/components/KeyboardShortcutsWrapper";
 
 export const metadata: Metadata = {
   title: "CrowdGo | Go Smarter. Wait Less. Miss Nothing.",
@@ -16,9 +20,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <SkipLink />
         <AuthProvider>
-          <NotificationHandler />
-          {children}
+          <HighContrastProvider>
+            <HighContrastToggle />
+            <KeyboardShortcutsWrapper />
+            <NotificationHandler />
+            {children}
+          </HighContrastProvider>
         </AuthProvider>
       </body>
     </html>

@@ -46,7 +46,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen pb-32 md:pb-12 pt-8">
-      <main className="container mx-auto px-6 max-w-2xl">
+      <main id="main-content" className="container mx-auto px-6 max-w-2xl">
         <header className="mb-12 flex items-center gap-8">
           <div className="w-24 h-24 rounded-[32px] bg-gradient-to-br from-primary to-secondary p-1">
              <div className="w-full h-full bg-background rounded-[28px] flex items-center justify-center relative overflow-hidden">
