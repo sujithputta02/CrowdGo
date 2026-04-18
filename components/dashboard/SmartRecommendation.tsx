@@ -1,17 +1,21 @@
 "use client";
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, ShieldCheck, Navigation, Clock, ArrowRight } from 'lucide-react';
 import { VenueService, QueueState } from '@/lib/types';
+import { RecommendationFeedback } from './RecommendationFeedback';
 
 interface SmartRecommendationProps {
   isThinking: boolean;
   service?: VenueService;
   prediction: QueueState | null;
   onNavigate: () => void;
+  recommendationId?: string;
 }
 
-export function SmartRecommendation({ isThinking, service, prediction, onNavigate }: SmartRecommendationProps) {
+export function SmartRecommendation({ isThinking, service, prediction, onNavigate, recommendationId }: SmartRecommendationProps) {
+  const [showFeedback, setShowFeedback] = useState(false);
   return (
     <motion.div 
       whileHover={{ scale: 1.01 }}
@@ -68,6 +72,13 @@ export function SmartRecommendation({ isThinking, service, prediction, onNavigat
           Start Navigation
           <ArrowRight className="group-hover:translate-x-2 transition-transform" />
         </button>
+
+        {recommendationId && (
+          <RecommendationFeedback 
+            recommendationId={recommendationId}
+            onSubmit={() => setShowFeedback(false)}
+          />
+        )}
       </div>
     </motion.div>
   );
