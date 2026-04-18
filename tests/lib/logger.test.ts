@@ -16,7 +16,6 @@ describe('Server Logger', () => {
   let consoleLogSpy: jest.SpyInstance;
   let consoleWarnSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
-  const originalEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -29,7 +28,6 @@ describe('Server Logger', () => {
     consoleLogSpy.mockRestore();
     consoleWarnSpy.mockRestore();
     consoleErrorSpy.mockRestore();
-    process.env.NODE_ENV = originalEnv;
   });
 
   describe('debug', () => {
