@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>54/54</span>
+                <span class='fraction'>55/55</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>47/47</span>
+                <span class='fraction'>48/48</span>
             </div>
         
             
@@ -254,7 +254,21 @@
 <a name='L189'></a><a href='#L189'>189</a>
 <a name='L190'></a><a href='#L190'>190</a>
 <a name='L191'></a><a href='#L191'>191</a>
-<a name='L192'></a><a href='#L192'>192</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -446,18 +460,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { db } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
+import { firestoreDocToData, FirestoreQueryResult } from '@/lib/types/firestore';
+import { Query, QuerySnapshot, DocumentData } from 'firebase-admin/firestore';
+&nbsp;
+export type RecommendationType = 'gate' | 'concession' | 'restroom' | 'route' | 'exit' | 'general';
+export type FeedbackRating = 1 | 2 | 3 | 4 | 5;
+export type IssueType = 'inaccurate' | 'confusing' | 'unhelpful' | 'other';
 &nbsp;
 export interface Feedback {
   id: string;
   userId: string;
   recommendationId?: string;
-  recommendationType: 'gate' | 'concession' | 'restroom' | 'route' | 'exit' | 'general';
-  rating: 1 | 2 | 3 | 4 | 5;
+  recommendationType: RecommendationType;
+  rating: FeedbackRating;
   helpful: boolean;
   comment?: string;
   actualWaitTime?: number;
   expectedWaitTime?: number;
-  issueType?: 'inaccurate' | 'confusing' | 'unhelpful' | 'other';
+  issueType?: IssueType;
   createdAt: Date;
   venueId: string;
   sessionId?: string;
@@ -489,7 +510,7 @@ export const FeedbackService = {
 &nbsp;
     await feedbackRef.set(newFeedback);
     
-    console.log(`Feedback submitted: ${newFeedback.id} [Rating: ${newFeedback.rating}]`);
+    logger.info('Feedback submitted', { feedbackId: newFeedback.id, rating: newFeedback.rating });
     
     return newFeedback;
   },
@@ -503,7 +524,7 @@ export const FeedbackService = {
     endDate?: Date
   ): Promise&lt;FeedbackMetrics&gt; {
     const firestore = db();
-    let query: any = firestore
+    let query: Query&lt;DocumentData&gt; = firestore
       .collection('feedback')
       .where('venueId', '==', venueId);
 &nbsp;
@@ -514,8 +535,8 @@ export const FeedbackService = {
       query = query.where('createdAt', '&lt;=', endDate);
     }
 &nbsp;
-    const snapshot = await query.get();
-    const feedbacks = snapshot.docs.map((doc: any) =&gt; doc.data() as Feedback);
+    const snapshot: QuerySnapshot&lt;DocumentData&gt; = await query.get();
+    const feedbacks: Feedback[] = snapshot.docs.map((doc) =&gt; doc.data() as Feedback);
 &nbsp;
     if (feedbacks.length === 0) {
       return {
@@ -582,12 +603,12 @@ export const FeedbackService = {
    * Get recent feedback for a specific recommendation type
    */
   async getFeedbackByType(
-    recommendationType: Feedback['recommendationType'],
+    recommendationType: RecommendationType,
     venueId: string = <span class="branch-0 cbranch-no" title="branch not covered" >'wankhede',</span>
     limit: number = <span class="branch-0 cbranch-no" title="branch not covered" >50</span>
   ): Promise&lt;Feedback[]&gt; {
     const firestore = db();
-    const snapshot = await firestore
+    const snapshot: QuerySnapshot&lt;DocumentData&gt; = await firestore
       .collection('feedback')
       .where('venueId', '==', venueId)
       .where('recommendationType', '==', recommendationType)
@@ -595,7 +616,7 @@ export const FeedbackService = {
       .limit(limit)
       .get();
 &nbsp;
-    return snapshot.docs.map((doc: any) =&gt; doc.data() as Feedback);
+    return snapshot.docs.map((doc) =&gt; doc.data() as Feedback);
   },
 &nbsp;
   /**
@@ -604,14 +625,14 @@ export const FeedbackService = {
   async trackAcceptance(
     userId: string,
     recommendationId: string,
-    recommendationType: Feedback['recommendationType'],
+    recommendationType: RecommendationType,
     venueId: string = <span class="branch-0 cbranch-no" title="branch not covered" >'wankhede'</span>
   ): Promise&lt;void&gt; {
     await this.submitFeedback({
       userId,
       recommendationId,
       recommendationType,
-      rating: 5, // Implicit 5-star for acceptance
+      rating: 5,
       helpful: true,
       venueId,
     });
@@ -623,14 +644,14 @@ export const FeedbackService = {
   async trackRejection(
     userId: string,
     recommendationId: string,
-    recommendationType: Feedback['recommendationType'],
+    recommendationType: RecommendationType,
     venueId: string = <span class="branch-0 cbranch-no" title="branch not covered" >'wankhede'</span>
   ): Promise&lt;void&gt; {
     await this.submitFeedback({
       userId,
       recommendationId,
       recommendationType,
-      rating: 2, // Implicit low rating for rejection
+      rating: 2,
       helpful: false,
       venueId,
     });
@@ -643,7 +664,7 @@ export const FeedbackService = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-17T13:39:11.339Z
+                at 2026-04-18T06:23:21.465Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

@@ -1,4 +1,4 @@
-import { Validators, ValidationError, validateSafe } from '@/lib/validation';
+import { Validators, ValidationError, validateSafe } from '@/lib/utils/validation';
 
 describe('Validators', () => {
   describe('location', () => {

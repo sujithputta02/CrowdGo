@@ -20,6 +20,7 @@ export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
     super(message, 'VALIDATION_ERROR', 400, details);
     this.name = 'ValidationError';
+    Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
 
@@ -27,6 +28,7 @@ export class AuthenticationError extends AppError {
   constructor(message: string = 'Authentication required') {
     super(message, 'UNAUTHORIZED', 401);
     this.name = 'AuthenticationError';
+    Object.setPrototypeOf(this, AuthenticationError.prototype);
   }
 }
 
@@ -34,6 +36,7 @@ export class AuthorizationError extends AppError {
   constructor(message: string = 'Insufficient permissions') {
     super(message, 'FORBIDDEN', 403);
     this.name = 'AuthorizationError';
+    Object.setPrototypeOf(this, AuthorizationError.prototype);
   }
 }
 
@@ -41,6 +44,7 @@ export class NotFoundError extends AppError {
   constructor(resource: string) {
     super(`${resource} not found`, 'NOT_FOUND', 404);
     this.name = 'NotFoundError';
+    Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 }
 
@@ -48,6 +52,7 @@ export class RateLimitError extends AppError {
   constructor(message: string = 'Rate limit exceeded') {
     super(message, 'RATE_LIMITED', 429);
     this.name = 'RateLimitError';
+    Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }
 
@@ -60,6 +65,7 @@ export class ExternalServiceError extends AppError {
       { service, originalError: originalError?.message }
     );
     this.name = 'ExternalServiceError';
+    Object.setPrototypeOf(this, ExternalServiceError.prototype);
   }
 }
 
@@ -67,6 +73,7 @@ export class PredictionError extends AppError {
   constructor(message: string, details?: Record<string, unknown>) {
     super(message, 'PREDICTION_FAILED', 500, details);
     this.name = 'PredictionError';
+    Object.setPrototypeOf(this, PredictionError.prototype);
   }
 }
 

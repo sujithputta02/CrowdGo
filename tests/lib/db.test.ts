@@ -55,6 +55,7 @@ describe('Database Service', () => {
       expect(setDocCall.activeMatch).toBeDefined();
       expect(setDocCall.activeMatch.home).toBe('Mumbai Indians');
       expect(setDocCall.activeMatch.away).toBe('Chennai Super Kings');
+      expect(setDocCall.activeMatch.nextSafeWindowIn).toBe(15);
     });
 
     it('should include notifications in seeded venue', async () => {
@@ -81,9 +82,12 @@ describe('Database Service', () => {
       expect(setDoc).toHaveBeenCalled();
       expect(result.uid).toBe('test-uid');
       expect(result.email).toBe('test@example.com');
+      expect(result.name).toBe('test');
       expect(result.aura).toBe(100);
       expect(result.matchStreak).toBe(0);
       expect(result.timeSaved).toBe(0);
+      expect(result.createdAt).toBeDefined();
+      expect(result.updatedAt).toBeDefined();
     });
 
     it('should return existing user profile when user exists', async () => {
@@ -94,12 +98,16 @@ describe('Database Service', () => {
         matchStreak: 5,
         timeSaved: 30,
         settings: {
+          theme: 'dark',
           notifications: true,
+          language: 'en',
           accessibility: {
             stepFree: false,
             highContrast: false,
           },
         },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       (getDoc as jest.Mock).mockResolvedValue({
@@ -135,6 +143,8 @@ describe('Database Service', () => {
       const result = await syncUserProfile('test-uid', 'test@example.com');
 
       expect(result.settings).toBeDefined();
+      expect(result.settings.theme).toBe('dark');
+      expect(result.settings.language).toBe('en');
       expect(result.settings.notifications).toBe(true);
       expect(result.settings.accessibility.stepFree).toBe(false);
       expect(result.settings.accessibility.highContrast).toBe(false);

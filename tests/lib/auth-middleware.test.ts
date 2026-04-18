@@ -1,5 +1,6 @@
 import { verifyToken, requireAuth, verifyPubSubToken } from '@/lib/auth-middleware';
 import { NextRequest } from 'next/server';
+import { logger } from '@/lib/logger';
 
 // Mock Firebase Admin with proper structure
 const mockVerifyIdToken = jest.fn();
@@ -83,7 +84,7 @@ describe('Auth Middleware', () => {
     it('should return null when token verification fails', async () => {
       mockVerifyIdToken.mockRejectedValue(new Error('Invalid token'));
 
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation();
 
       const request = new NextRequest('http://localhost:3000/api/test', {
         headers: {
@@ -94,12 +95,12 @@ describe('Auth Middleware', () => {
       const result = await verifyToken(request);
 
       expect(result).toBeNull();
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Token verification failed:',
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
+        'Token verification failed',
         expect.any(Error)
       );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
 
     it('should handle expired tokens', async () => {
@@ -311,7 +312,7 @@ describe('Auth Middleware', () => {
     it('should not expose sensitive error details', async () => {
       mockVerifyIdToken.mockRejectedValue(new Error('Detailed internal error'));
 
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const loggerErrorSpy = jest.spyOn(logger, 'error').mockImplementation();
 
       const request = new NextRequest('http://localhost:3000/api/test', {
         headers: {
@@ -325,9 +326,9 @@ describe('Auth Middleware', () => {
       expect(result).toBeNull();
       
       // Error should be logged but not returned
-      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(loggerErrorSpy).toHaveBeenCalled();
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
 
     it('should handle concurrent authentication requests', async () => {

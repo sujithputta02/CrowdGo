@@ -63,7 +63,7 @@ export const VertexAIService = {
     }
 
     if (!_endpointId) {
-      logger.warn("Vertex AI: No ENDPOINT_ID found. Skipping prediction.");
+      logger.info("Vertex AI: No custom ENDPOINT_ID found. Utilizing Surrogate Logic fallback.");
       return null;
     }
 

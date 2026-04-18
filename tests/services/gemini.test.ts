@@ -2,7 +2,7 @@ import { GeminiService } from '@/lib/gemini';
 
 jest.mock('@/lib/monitoring', () => ({
   MonitoringService: {
-    log: jest.fn(),
+    log: jest.fn().mockResolvedValue(undefined),
   },
 }));
 

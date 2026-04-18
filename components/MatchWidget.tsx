@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Clock, AlertCircle, CheckCircle } from 'lucide-react';
-import { MatchService, MatchState } from '@/lib/services/match.service';
+import { MatchService } from '@/lib/services/match.service';
+import { MatchState } from '@/lib/types';
 
 interface MatchWidgetProps {
   estimatedTimeNeeded?: number; // in minutes
@@ -68,12 +69,12 @@ export default function MatchWidget({ estimatedTimeNeeded = 0, showWarning = fal
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-text-muted">Match Momentum</span>
-              <span className="text-xs font-bold">{matchState.momentum}%</span>
+              <span className="text-xs font-bold uppercase tracking-tighter">{matchState.momentum}</span>
             </div>
             <div className="w-full bg-border rounded-full h-2">
               <div
                 className="h-2 rounded-full bg-gradient-to-r from-primary to-secondary transition-all"
-                style={{ width: `${matchState.momentum}%` }}
+                style={{ width: matchState.momentum === 'high' ? '90%' : matchState.momentum === 'medium' ? '50%' : '15%' }}
               />
             </div>
           </div>

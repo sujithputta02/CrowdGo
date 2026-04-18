@@ -1,29 +1,10 @@
-/**
- * Prediction Service
- * Derives real-time queue states from live venue data.
- */
-
 import { logger } from '../logger.client';
 import { getErrorMessage } from '../types/errors';
+import { QueueState, ConfidenceLevel } from '../types';
 
 export type FacilityType = 'gate' | 'pos';
-export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
-export interface QueueState {
-  facilityId: string;
-  waitRange: string;
-  estimatedWaitMinutes: number;
-  confidence: ConfidenceLevel;
-  auraReason?: string;
-  lastUpdated: string;
-}
-
-interface PredictionResponse {
-  predictedWait: number;
-  confidence: ConfidenceLevel;
-  auraReason: string;
-  engine: string;
-}
+import { PredictionResponse } from '../types';
 
 const PREDICTION_TIMEOUT_MS = 5000;
 const FALLBACK_WAIT_BUFFER = 3;
@@ -63,10 +44,14 @@ export const PredictionService = {
 
       return {
         facilityId,
+        status: prediction.predictedWait > 10 ? 'busy' : 'optimal',
+        wait: prediction.predictedWait,
         waitRange: `${prediction.predictedWait}-${prediction.predictedWait + 2} mins`,
         estimatedWaitMinutes: prediction.predictedWait,
         confidence: prediction.confidence,
         auraReason: prediction.auraReason,
+        trend: 'stable',
+        recommendation: prediction.auraReason,
         lastUpdated: new Date().toISOString()
       };
     } catch (error: unknown) {
@@ -76,10 +61,14 @@ export const PredictionService = {
       
       return {
         facilityId,
+        status: currentWait > 10 ? 'busy' : 'optimal',
+        wait: currentWait,
         waitRange: `${currentWait}-${currentWait + FALLBACK_WAIT_BUFFER} mins`,
         estimatedWaitMinutes: currentWait,
         confidence: 'low',
         auraReason: "Standard estimate (AI temporarily offline)",
+        trend: 'stable',
+        recommendation: "Standard estimate (AI temporarily offline)",
         lastUpdated: new Date().toISOString()
       };
     }

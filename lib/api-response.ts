@@ -4,7 +4,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { ApiResponse, ApiError } from './types';
+import { ApiResponse } from './types/index';
 import { logger } from './logger';
 
 export class ApiResponseHandler {
@@ -29,7 +29,7 @@ export class ApiResponseHandler {
     message: string,
     statusCode: number = 400,
     code?: string,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): NextResponse<ApiResponse<null>> {
     return NextResponse.json(
       {
@@ -113,6 +113,6 @@ export async function safeHandler<T>(
     return await handler();
   } catch (error) {
     logger.error('API handler error', error);
-    return ApiResponseHandler.internalError() as any;
+    return ApiResponseHandler.internalError() as unknown as NextResponse<T>;
   }
 }

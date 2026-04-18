@@ -3,8 +3,8 @@
  * Centralized validation for API requests and user inputs
  */
 
-import { Location, PredictionRequest, IngestEvent } from './types';
-import { logger } from './logger';
+import { Location, PredictionRequest, IngestEvent } from '../types';
+import { logger } from '../logger';
 
 export class ValidationError extends Error {
   constructor(

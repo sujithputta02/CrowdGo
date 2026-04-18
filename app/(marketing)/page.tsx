@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll } from 'framer-motion';
-import { 
-  Zap, 
-  Activity, 
-  ArrowRight, 
-  ShieldCheck, 
+import {
+  Zap,
+  Activity,
+  ArrowRight,
+  ShieldCheck,
   Navigation,
   Eye,
   BarChart3,
@@ -50,7 +50,7 @@ export default function LandingPage() {
             </div>
             <span className="text-2xl font-extrabold tracking-tighter font-heading">Crowd<span className="gradient-text">Go</span></span>
           </div>
-          
+
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-muted">
             <a href="#features" className="hover:text-white transition-colors">Vibe Check</a>
             <a href="#dashboard" className="hover:text-white transition-colors">God View</a>
@@ -77,7 +77,7 @@ export default function LandingPage() {
             </span>
           </motion.div>
 
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spring, delay: 0.2 }}
@@ -94,11 +94,11 @@ export default function LandingPage() {
             transition={{ ...spring, delay: 0.3 }}
             className="text-xl md:text-2xl text-text-muted mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            Real-time crowd orchestration for the main characters. 
-            No more L lines, just W movement. Locked in for the ultimate match vibe. 
+            Real-time crowd orchestration for the main characters.
+            No more L lines, just W movement. Locked in for the ultimate match vibe.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spring, delay: 0.4 }}
@@ -115,56 +115,56 @@ export default function LandingPage() {
         </div>
 
         {/* Floating Mockup Preview */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spring, delay: 0.6 }}
           className="mt-24 container mx-auto max-w-4xl relative"
         >
           <div className="glass-card p-4 md:p-8 aspect-video flex flex-col items-center justify-center overflow-hidden group">
-             <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-[#111] to-[#222] border border-white/10 relative shadow-2xl overflow-hidden">
-                {/* Simulated UI */}
-                <div className="absolute inset-0 flex flex-col">
-                  {/* Top Bar */}
-                  <div className="p-4 flex justify-between items-center border-b border-white/5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Zap className="w-4 h-4 text-primary" />
-                      </div>
-                      <span className="font-bold text-sm tracking-tight text-white/50">MATCH LIVE: MUMBAI INDIANS vs GUJARAT TITANS</span>
+            <div className="w-full h-full rounded-2xl bg-gradient-to-tr from-[#111] to-[#222] border border-white/10 relative shadow-2xl overflow-hidden">
+              {/* Simulated UI */}
+              <div className="absolute inset-0 flex flex-col">
+                {/* Top Bar */}
+                <div className="p-4 flex justify-between items-center border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="px-2 py-1 rounded bg-accent/20 text-accent text-[10px] font-bold">LIVE STADIUM VIEW</div>
+                    <span className="font-bold text-sm tracking-tight text-white/50">MATCH LIVE: MUMBAI INDIANS vs GUJARAT TITANS</span>
                   </div>
-                  {/* Content Area */}
-                  <div className="flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="flex flex-col justify-center">
-                      <h3 className="text-3xl font-black mb-4">RESTROOM SPEEDRUN</h3>
-                      <p className="text-text-muted mb-6">Zone C is clear. 2 min walk, 0 min wait. Go now and miss zero action.</p>
-                      <div className="flex gap-4">
-                        <div className="glass-card p-4 flex-1">
-                          <p className="text-[10px] text-text-muted uppercase mb-1">Walking</p>
-                          <p className="text-xl font-bold">2 MINS</p>
-                        </div>
-                        <div className="glass-card p-4 flex-1 border-secondary/30 bg-secondary/10">
-                          <p className="text-[10px] text-secondary uppercase mb-1">Queue</p>
-                          <p className="text-xl font-bold text-secondary">0 MINS</p>
+                  <div className="px-2 py-1 rounded bg-accent/20 text-accent text-[10px] font-bold">LIVE STADIUM VIEW</div>
+                </div>
+                {/* Content Area */}
+                <div className="flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="flex flex-col justify-center">
+                    <h3 className="text-3xl font-black mb-4">RESTROOM SPEEDRUN</h3>
+                    <p className="text-text-muted mb-6">Zone C is clear. 2 min walk, 0 min wait. Go now and miss zero action.</p>
+                    <div className="flex gap-4">
+                      <div className="glass-card p-4 flex-1">
+                        <p className="text-[10px] text-text-muted uppercase mb-1">Walking</p>
+                        <p className="text-xl font-bold">2 MINS</p>
+                      </div>
+                      <div className="glass-card p-4 flex-1 border-secondary/30 bg-secondary/10">
+                        <p className="text-[10px] text-secondary uppercase mb-1">Queue</p>
+                        <p className="text-xl font-bold text-secondary">0 MINS</p>
+                      </div>
+                    </div>
+                    <button className="mt-8 py-3 bg-primary rounded-xl font-bold">Navigate Now</button>
+                  </div>
+                  <div className="hidden md:flex items-center justify-center relative">
+                    {/* Animated circles/map simulation */}
+                    <div className="w-64 h-64 border-2 border-white/5 rounded-full flex items-center justify-center">
+                      <div className="w-48 h-48 border-2 border-primary/20 rounded-full flex items-center justify-center animate-pulse-slow">
+                        <div className="w-32 h-32 border-2 border-secondary/20 rounded-full flex items-center justify-center">
+                          <Activity className="text-primary w-12 h-12" />
                         </div>
                       </div>
-                      <button className="mt-8 py-3 bg-primary rounded-xl font-bold">Navigate Now</button>
-                    </div>
-                    <div className="hidden md:flex items-center justify-center relative">
-                       {/* Animated circles/map simulation */}
-                       <div className="w-64 h-64 border-2 border-white/5 rounded-full flex items-center justify-center">
-                          <div className="w-48 h-48 border-2 border-primary/20 rounded-full flex items-center justify-center animate-pulse-slow">
-                             <div className="w-32 h-32 border-2 border-secondary/20 rounded-full flex items-center justify-center">
-                                <Activity className="text-primary w-12 h-12" />
-                             </div>
-                          </div>
-                       </div>
                     </div>
                   </div>
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
         </motion.div>
       </section>
@@ -180,19 +180,19 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureCard 
+            <FeatureCard
               icon={<Navigation className="w-8 h-8 text-primary" />}
               title="Smart Arrival"
               desc="No cap, we find the fastest gate for your ticket. Skip the congestion and enter like the main character."
               tag="SPEEDRUN"
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<Coffee className="w-8 h-8 text-secondary" />}
               title="W Snack Runs"
               desc="Vibe check every concession stand. We find the shortest lines for your half-time cravings."
               tag="FAST PASS"
             />
-            <FeatureCard 
+            <FeatureCard
               icon={<ShieldCheck className="w-8 h-8 text-accent" />}
               title="Match Protection"
               desc="Never miss a goal again. We tell you the perfect moment to leave your seat and return before kickoff."
@@ -258,45 +258,45 @@ export default function LandingPage() {
           </div>
           <div className="flex-1 relative">
             <div className="relative z-10 p-4 bg-background border border-white/10 rounded-3xl shadow-2xl overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
-               <div className="p-8 aspect-square flex flex-col gap-6">
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <h4 className="text-sm text-text-muted font-bold uppercase tracking-wider mb-2">CROWD DENSITY</h4>
-                      <p className="text-3xl font-black">72.4k <span className="text-xs text-secondary ml-2">LIVE</span></p>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
+              <div className="p-8 aspect-square flex flex-col gap-6">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <h4 className="text-sm text-text-muted font-bold uppercase tracking-wider mb-2">CROWD DENSITY</h4>
+                    <p className="text-3xl font-black">72.4k <span className="text-xs text-secondary ml-2">LIVE</span></p>
+                  </div>
+                  <div className="w-24 h-12 flex items-end gap-1">
+                    {[0.4, 0.7, 0.5, 0.9, 0.6, 0.3, 0.8].map((h, i) => (
+                      <div key={i} className="flex-1 bg-primary rounded-t-sm" style={{ height: `${h * 100}%` }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-1 glass-card p-6 flex flex-col gap-4">
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-bold uppercase opacity-50">Gate 1 Ingress</span>
+                      <span className="text-xs font-bold text-accent">HEAVY</span>
                     </div>
-                    <div className="w-24 h-12 flex items-end gap-1">
-                      {[0.4, 0.7, 0.5, 0.9, 0.6, 0.3, 0.8].map((h, i) => (
-                        <div key={i} className="flex-1 bg-primary rounded-t-sm" style={{ height: `${h * 100}%` }} />
-                      ))}
+                    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="w-3/4 h-full bg-accent" />
                     </div>
                   </div>
-                  <div className="flex-1 glass-card p-6 flex flex-col gap-4">
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-bold uppercase opacity-50">Gate 1 Ingress</span>
-                        <span className="text-xs font-bold text-accent">HEAVY</span>
-                      </div>
-                      <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div className="w-3/4 h-full bg-accent" />
-                      </div>
+                  <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-bold uppercase opacity-50">South Concourse</span>
+                      <span className="text-xs font-bold text-secondary">CLEAR</span>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-bold uppercase opacity-50">South Concourse</span>
-                        <span className="text-xs font-bold text-secondary">CLEAR</span>
-                      </div>
-                      <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div className="w-1/4 h-full bg-secondary" />
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white/5 rounded-xl border border-accent/20">
-                      <p className="text-xs font-black text-accent uppercase mb-2">ACTION REQUIRED</p>
-                      <p className="text-sm">Redeploy 3 stewards to North Gate. Surge predicted in T-minus 4 minutes.</p>
-                      <button className="mt-4 w-full py-2 bg-accent rounded font-bold text-xs uppercase tracking-tight">Dispatch Now</button>
+                    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="w-1/4 h-full bg-secondary" />
                     </div>
                   </div>
-               </div>
+                  <div className="p-4 bg-white/5 rounded-xl border border-accent/20">
+                    <p className="text-xs font-black text-accent uppercase mb-2">ACTION REQUIRED</p>
+                    <p className="text-sm">Redeploy 3 stewards to North Gate. Surge predicted in T-minus 4 minutes.</p>
+                    <button className="mt-4 w-full py-2 bg-accent rounded font-bold text-xs uppercase tracking-tight">Dispatch Now</button>
+                  </div>
+                </div>
+              </div>
             </div>
             {/* Background elements for depth */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse-slow" />
@@ -343,7 +343,7 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, desc, tag }: { icon: any, title: string, desc: string, tag: string }) {
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -10 }}
       className="glass-card p-10 flex flex-col items-start gap-8 relative group cursor-default"
     >
@@ -358,11 +358,11 @@ function FeatureCard({ icon, title, desc, tag }: { icon: any, title: string, des
         <p className="text-text-muted leading-relaxed">{desc}</p>
       </div>
       <div className="w-full h-1 bg-white/5 rounded-full mt-4 overflow-hidden">
-        <motion.div 
+        <motion.div
           initial={{ width: 0 }}
           whileInView={{ width: "100%" }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="h-full bg-gradient-to-r from-primary to-secondary" 
+          className="h-full bg-gradient-to-r from-primary to-secondary"
         />
       </div>
     </motion.div>

@@ -10,7 +10,7 @@ import { logger } from './logger';
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'crowdgo-493512';
 const LOCATION = 'us-central1';
-const MODEL_ID = 'gemini-1.5-flash';
+const MODEL_ID = 'gemini-1.5-flash-001';
 
 export const GeminiService = {
   /**
@@ -40,8 +40,8 @@ export const GeminiService = {
 
       if (!accessToken) throw new Error('Failed to obtain access token');
 
-      // 2. Prepare REST Request (Using v1beta1 for wider model coverage)
-      const url = new URL(`https://${LOCATION}-aiplatform.googleapis.com/v1beta1/projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL_ID}:streamGenerateContent`);
+      // 2. Prepare REST Request (Using v1 for stability)
+      const url = new URL(`https://${LOCATION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL_ID}:streamGenerateContent`);
       
       const prompt = `
         You are the "Aura Intelligence" for Wankhede Stadium (IPL).
@@ -89,8 +89,11 @@ export const GeminiService = {
       const data = await response.json();
       
       // Parse streaming response (v1 endpoint often returns an array or single object)
-      const text = data[0]?.candidates?.[0]?.content?.parts?.[0]?.text || 
-                   data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const candidates = Array.isArray(data) 
+        ? data[0]?.candidates 
+        : data.candidates;
+
+      const text = candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!text) throw new Error('Invalid Gemini Response Format');
 

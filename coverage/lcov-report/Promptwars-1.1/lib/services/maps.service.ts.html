@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/11</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">83.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>5/6</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>12/12</span>
             </div>
         
             
@@ -127,7 +127,31 @@
 <a name='L62'></a><a href='#L62'>62</a>
 <a name='L63'></a><a href='#L63'>63</a>
 <a name='L64'></a><a href='#L64'>64</a>
-<a name='L65'></a><a href='#L65'>65</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -169,6 +193,8 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -195,6 +221,9 @@
  * Google Maps Positioning &amp; Routing Service
  */
 &nbsp;
+import { logger } from '../logger.client';
+import { Location } from '../types';
+&nbsp;
 export interface LatLng {
   latitude: number;
   longitude: number;
@@ -206,6 +235,14 @@ export interface RouteData {
   polyline: {
     encodedPolyline: string;
   };
+}
+&nbsp;
+export interface POI {
+  name: string;
+  lat: number;
+  lng: number;
+  type: string;
+  id: string;
 }
 &nbsp;
 export const MapsService = {
@@ -223,20 +260,22 @@ export const MapsService = {
       });
 &nbsp;
       if (!response.ok) {
-        console.warn('MapsService: Route fetch failed (likely API restriction). Fallback should handle this.');
+        logger.warn('Maps route fetch failed - likely API restriction');
         return null;
       }
       
       const data = await response.json();
       return data.routes?.[0] || null;
-    } catch (error) {
-      console.error('MapsService Route Error:', error);
+    } catch (error: unknown) {
+      <span class="missing-if-branch" title="else path not taken" >E</span>if (error instanceof Error) {
+        logger.error('Maps service route error', { message: error.message });
+      }
       return null;
     }
   },
 &nbsp;
   // Wankhede Stadium, Mumbai - Home of IPL 2026
-  WANKHEDE: { lat: 18.9389, lng: 72.8258 },
+  WANKHEDE: { lat: 18.9389, lng: 72.8258 } as Location,
   
   LOCATIONS: {
     'gate-1': { lat: 18.9378, lng: 72.8257 },
@@ -244,16 +283,16 @@ export const MapsService = {
     'gate-5': { lat: 18.9400, lng: 72.8265 },
     'churchgate': { lat: 18.9351, lng: 72.8273 },
     'seat-a1': { lat: 18.9392, lng: 72.8255 }
-  },
+  } as Record&lt;string, Location&gt;,
 &nbsp;
   POINTS_OF_INTEREST: [
     { name: 'Gate 1 (Garware)', lat: 18.9378, lng: 72.8257, type: 'gate', id: 'gate-1' },
     { name: 'Gate 3 (Merchant)', lat: 18.9388, lng: 72.8245, type: 'gate', id: 'gate-3' },
     { name: 'Gate 5 (Gavaskar)', lat: 18.9400, lng: 72.8265, type: 'gate', id: 'gate-5' },
     { name: 'Churchgate Hub', lat: 18.9351, lng: 72.8273, type: 'hub', id: 'churchgate' },
-  ],
+  ] as POI[],
 &nbsp;
-  SEAT_A1: { lat: 18.9392, lng: 72.8255 }, // Sachin Tendulkar Stand 
+  SEAT_A1: { lat: 18.9392, lng: 72.8255 } as Location, // Sachin Tendulkar Stand 
 };
 &nbsp;</pre></td></tr></table></pre>
 
@@ -262,7 +301,7 @@ export const MapsService = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-17T13:39:11.339Z
+                at 2026-04-18T06:23:21.465Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

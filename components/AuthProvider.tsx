@@ -4,7 +4,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { syncUserProfile, seedVenueData, UserProfile } from '@/lib/db';
+import { syncUserProfile, seedVenueData } from '@/lib/db';
+import { UserProfile } from '@/lib/types';
 
 interface AuthContextType {
   user: User | null;

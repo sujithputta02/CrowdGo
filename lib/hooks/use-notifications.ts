@@ -73,16 +73,10 @@ export function useNotifications() {
 
         // Get registration token using the registered worker
         const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-        const tokenOptions: any = {
+        const currentToken = await getToken(messaging as Messaging, {
           serviceWorkerRegistration: registration,
-        };
-        
-        // Only add VAPID key if it's configured
-        if (vapidKey) {
-          tokenOptions.vapidKey = vapidKey;
-        }
-
-        const currentToken = await getToken(messaging as Messaging, tokenOptions);
+          vapidKey: vapidKey
+        });
 
         if (currentToken) {
           setToken(currentToken);

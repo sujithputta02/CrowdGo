@@ -88,7 +88,10 @@ describe('IncidentService', () => {
           orderBy: jest.fn().mockReturnThis(),
           limit: jest.fn().mockReturnThis(),
           get: jest.fn().mockResolvedValue({
-            docs: mockIncidents.map((inc) => ({ data: () => inc })),
+            docs: mockIncidents.map((inc) => ({ 
+              id: inc.id,
+              data: () => inc 
+            })),
           }),
         })),
       });
@@ -209,7 +212,10 @@ describe('IncidentService', () => {
           where: jest.fn().mockReturnThis(),
           orderBy: jest.fn().mockReturnThis(),
           get: jest.fn().mockResolvedValue({
-            docs: mockTasks.map((task) => ({ data: () => task })),
+            docs: mockTasks.map((task) => ({ 
+              id: task.id,
+              data: () => task 
+            })),
           }),
         })),
       });

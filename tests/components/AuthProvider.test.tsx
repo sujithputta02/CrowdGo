@@ -11,9 +11,13 @@ jest.mock('@/lib/db', () => ({
   syncUserProfile: jest.fn().mockResolvedValue({
     uid: 'test-uid',
     email: 'test@example.com',
+    name: 'test',
     aura: 100,
     matchStreak: 0,
     timeSaved: 0,
+    settings: { theme: 'dark', notifications: true, language: 'en', accessibility: { stepFree: false, highContrast: false } },
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   }),
   seedVenueData: jest.fn().mockResolvedValue(undefined),
 }));
@@ -34,7 +38,13 @@ jest.mock('firebase/firestore', () => ({
       data: () => ({
         uid: 'test-uid',
         email: 'test@example.com',
+        name: 'test',
         aura: 100,
+        matchStreak: 0,
+        timeSaved: 0,
+        settings: { theme: 'dark', notifications: true, language: 'en', accessibility: { stepFree: false, highContrast: false } },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       }),
     });
     return jest.fn();
@@ -107,7 +117,13 @@ describe('AuthProvider', () => {
         data: () => ({
           uid: 'test-uid',
           email: 'test@example.com',
+          name: 'test',
           aura: 150,
+          matchStreak: 5,
+          timeSaved: 30,
+          settings: { theme: 'dark', notifications: true, language: 'en', accessibility: { stepFree: false, highContrast: false } },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }),
       });
       return jest.fn();
@@ -146,7 +162,13 @@ describe('AuthProvider', () => {
         data: () => ({
           uid: 'test-uid-2',
           email: 'test2@example.com',
+          name: 'test2',
           aura: 100,
+          matchStreak: 0,
+          timeSaved: 0,
+          settings: { theme: 'dark', notifications: true, language: 'en', accessibility: { stepFree: false, highContrast: false } },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }),
       });
       return jest.fn();
@@ -165,7 +187,13 @@ describe('AuthProvider', () => {
         data: () => ({
           uid: 'test-uid-2',
           email: 'test2@example.com',
+          name: 'test2',
           aura: 200,
+          matchStreak: 0,
+          timeSaved: 0,
+          settings: { theme: 'dark', notifications: true, language: 'en', accessibility: { stepFree: false, highContrast: false } },
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         }),
       });
     }

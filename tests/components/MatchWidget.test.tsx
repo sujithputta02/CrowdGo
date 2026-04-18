@@ -9,7 +9,7 @@ jest.mock('@/lib/services/match.service', () => ({
       away: 'Man City',
       score: '2-1',
       time: "67'",
-      momentum: 75,
+      momentum: 'high',
       nextSafeWindowIn: 15,
     })),
     isOptimalMovementTime: jest.fn((minutes) => minutes <= 15),
@@ -45,7 +45,7 @@ describe('MatchWidget', () => {
     render(<MatchWidget />);
 
     expect(screen.getByText('Match Momentum')).toBeInTheDocument();
-    expect(screen.getByText('75%')).toBeInTheDocument();
+    expect(screen.getByText(/high/i)).toBeInTheDocument();
   });
 
   it('should show next break timing', () => {
@@ -71,7 +71,7 @@ describe('MatchWidget', () => {
       away: 'Man City',
       score: '2-1',
       time: "67'",
-      momentum: 75,
+      momentum: 'high',
       nextSafeWindowIn: 5, // Only 5 minutes until break
     });
 
@@ -91,7 +91,7 @@ describe('MatchWidget', () => {
       away: 'Man City',
       score: '2-1',
       time: "67'",
-      momentum: 75,
+      momentum: 'high',
       nextSafeWindowIn: 5,
     });
 

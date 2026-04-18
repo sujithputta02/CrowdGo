@@ -44,13 +44,14 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/main');
-    } catch (err: any) {
-      if (err.code === 'auth/wrong-password') {
+    } catch (err: unknown) {
+      const error = err as { code?: string; message?: string };
+      if (error.code === 'auth/wrong-password') {
         setError('Wrong password. Check your aura.');
-      } else if (err.code === 'auth/user-not-found') {
+      } else if (error.code === 'auth/user-not-found') {
         setError('No fan found with this email. Sign up?');
       } else {
-        setError(err.message || 'Failed to sign in.');
+        setError(error.message || 'Failed to sign in.');
       }
     } finally {
       setLoading(false);
@@ -63,8 +64,9 @@ export default function LoginPage() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       router.push('/main');
-    } catch (err: any) {
-      if (err.code === 'auth/account-exists-with-different-credential') {
+    } catch (err: unknown) {
+      const error = err as { code?: string };
+      if (error.code === 'auth/account-exists-with-different-credential') {
         setError('Email already linked to another method. Try Email login.');
       } else {
         setError('Google sync failed. Try manual login.');
@@ -85,7 +87,7 @@ export default function LoginPage() {
     try {
       await sendPasswordResetEmail(auth, email);
       setMessage('Reset link sent! Check your inbox.');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Failed to send reset email. Check your connection.');
     } finally {
       setLoading(false);
@@ -98,7 +100,7 @@ export default function LoginPage() {
     try {
       await signInAnonymously(auth);
       router.push('/main');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError('Aura too low to enter anonymously. Try email.');
     } finally {
       setLoading(false);

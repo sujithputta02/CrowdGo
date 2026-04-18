@@ -6,14 +6,20 @@ import { NIGHT_THEME, DAY_THEME } from '@/lib/maps-theme';
 import { MapsService } from '@/lib/services/maps.service';
 import { logger } from '@/lib/logger.client';
 
+import { Location } from '@/lib/types';
+
+export interface AuraMarker extends google.maps.marker.AdvancedMarkerElement {
+  auraCategory?: string;
+}
+
 interface AuraMapProps {
-  center?: { lat: number, lng: number };
+  center?: Location;
   zoom?: number;
   isNightMode?: boolean;
   mapType?: 'roadmap' | 'satellite';
   polyline?: string;
   activeCategory?: 'all' | 'food' | 'restroom' | 'info';
-  onPoiClick?: (location: { lat: number, lng: number }, name: string) => void;
+  onPoiClick?: (location: Location, name: string) => void;
 }
 
 // Global persistent guard to silence setOptions warnings across HMR
@@ -35,14 +41,18 @@ export default function AuraMap({
   onPoiClick
 }: AuraMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<any>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [markers, setMarkers] = useState<any[]>([]);
+  const [markers, setMarkers] = useState<AuraMarker[]>([]);
 
   useEffect(() => {
-    const fetchPOIs = async (currentMap: any, MarkerClass: any, PinClass: any) => {
+    const fetchPOIs = async (
+      currentMap: google.maps.Map, 
+      MarkerClass: typeof google.maps.marker.AdvancedMarkerElement, 
+      PinClass: typeof google.maps.marker.PinElement
+    ) => {
       try {
-        const { Place } = await importLibrary("places") as any;
+        const { Place } = await importLibrary("places") as google.maps.PlacesLibrary;
         
         const categoryTypes = [
           { type: 'restaurant', color: '#fbbf24', label: 'Snacks', id: 'food' },
@@ -92,8 +102,8 @@ export default function AuraMap({
                 }
               });
 
-              (marker as any).auraCategory = cat.id;
-              newMarkers.push(marker);
+              (marker as AuraMarker).auraCategory = cat.id;
+              newMarkers.push(marker as AuraMarker);
             });
           }
         }
@@ -105,9 +115,9 @@ export default function AuraMap({
 
     const initMap = async () => {
       try {
-        const { Map, InfoWindow } = await importLibrary("maps") as any;
-        const { AdvancedMarkerElement, PinElement } = await importLibrary("marker") as any;
-        const { Place, SearchNearbyRequest } = await importLibrary("places") as any;
+        const { Map } = await importLibrary("maps") as google.maps.MapsLibrary;
+        const { AdvancedMarkerElement, PinElement } = await importLibrary("marker") as google.maps.MarkerLibrary;
+        const { Place } = await importLibrary("places") as google.maps.PlacesLibrary;
         await importLibrary("geometry");
         
         if (mapRef.current && !map) {

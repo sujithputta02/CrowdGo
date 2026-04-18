@@ -1,11 +1,4 @@
-export interface MatchState {
-  home: string;
-  away: string;
-  score: string;
-  time: string;
-  momentum: number; // 0-100 scale
-  nextSafeWindowIn: number; // minutes until next break
-}
+import { MatchState } from '@/lib/types/venue';
 
 export const MatchService = {
   getMatchStatus: (): MatchState => {
@@ -15,8 +8,9 @@ export const MatchService = {
       away: "Man City",
       score: "0-0",
       time: "34'",
-      momentum: 75,
-      nextSafeWindowIn: 11
+      nextBreak: "45'",
+      nextSafeWindowIn: 11,
+      momentum: 'high'
     };
   },
   

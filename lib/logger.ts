@@ -44,7 +44,7 @@ class Logger {
     
     // Send to Cloud Logging in production (server-side only)
     if (!this.isDevelopment) {
-      MonitoringService.log(message, 'INFO', context || {}).catch(() => {
+      Promise.resolve(MonitoringService.log(message, 'INFO', context || {})).catch(() => {
         // Silently fail if Cloud Logging is unavailable
       });
     }
@@ -59,7 +59,7 @@ class Logger {
     }
     
     if (!this.isDevelopment) {
-      MonitoringService.log(message, 'NOTICE', context || {}).catch(() => {});
+      Promise.resolve(MonitoringService.log(message, 'NOTICE', context || {})).catch(() => {});
     }
   }
 
@@ -72,7 +72,7 @@ class Logger {
     }
     
     if (!this.isDevelopment) {
-      MonitoringService.log(message, 'WARNING', context || {}).catch(() => {});
+      Promise.resolve(MonitoringService.log(message, 'WARNING', context || {})).catch(() => {});
     }
   }
 
@@ -94,7 +94,7 @@ class Logger {
     }
     
     if (!this.isDevelopment) {
-      MonitoringService.log(message, 'ERROR', errorContext).catch(() => {});
+      Promise.resolve(MonitoringService.log(message, 'ERROR', errorContext)).catch(() => {});
     }
   }
 
@@ -114,7 +114,7 @@ class Logger {
     console.error(this.formatMessage('ERROR', `CRITICAL: ${message}`, errorContext));
     
     if (!this.isDevelopment) {
-      MonitoringService.log(`CRITICAL: ${message}`, 'ERROR', errorContext).catch(() => {});
+      Promise.resolve(MonitoringService.log(`CRITICAL: ${message}`, 'ERROR', errorContext)).catch(() => {});
     }
   }
 }

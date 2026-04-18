@@ -7,57 +7,7 @@ import {
 import { db } from "./firebase";
 import { logger } from "./logger.client";
 
-// --- Types ---
-export interface UserProfile {
-  uid: string;
-  email: string;
-  displayName?: string;
-  aura: number;
-  matchStreak: number;
-  timeSaved: number;
-  ticket?: {
-    gate: string;
-    section: string;
-    row: string;
-    seat: string;
-  };
-  settings: {
-    notifications: boolean;
-    accessibility: {
-      stepFree: boolean;
-      highContrast: boolean;
-    };
-  };
-}
-
-export interface VenueState {
-  id: string;
-  name: string;
-  activeMatch: {
-    home: string;
-    away: string;
-    score: string;
-    time: string;
-    nextBreak: string;
-    momentum: 'low' | 'medium' | 'high';
-  };
-  services: Array<{
-    id: string;
-    name: string;
-    type: string;
-    status: 'optimal' | 'locked-in' | 'busy';
-    wait: number;
-    walk: number;
-    reason: string;
-    range: string;
-  }>;
-  notifications?: Array<{
-    id: string;
-    title: string;
-    message: string;
-    type: 'info' | 'warning' | 'emergency';
-  }>;
-}
+import { UserProfile, VenueState } from "./types";
 
 // --- Data Operations ---
 
@@ -79,6 +29,7 @@ export const seedVenueData = async () => {
         score: "0 - 0",
         time: "0'",
         nextBreak: "19:30",
+        nextSafeWindowIn: 15,
         momentum: "low",
       },
       services: [
@@ -137,6 +88,7 @@ export const syncUserProfile = async (uid: string, email: string) => {
     const newProfile: UserProfile = {
       uid,
       email,
+      name: email.split('@')[0],
       aura: 100,
       matchStreak: 0,
       timeSaved: 0,
@@ -147,12 +99,16 @@ export const syncUserProfile = async (uid: string, email: string) => {
         seat: "12"
       },
       settings: {
+        theme: 'dark',
         notifications: true,
+        language: 'en',
         accessibility: {
           stepFree: false,
           highContrast: false
         }
-      }
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
     await setDoc(userRef, newProfile);
     return newProfile;
