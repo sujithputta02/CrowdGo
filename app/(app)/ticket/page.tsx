@@ -22,7 +22,7 @@ export default function TicketPage() {
       <main className="container mx-auto px-6 max-w-xl text-center">
         <header className="mb-12">
           <h1 className="text-4xl font-black mb-4 font-heading tracking-tighter uppercase leading-none">Your Ticket</h1>
-          <p className="text-text-muted">Aura is high. You're locked in for Section {userTicket.section}.</p>
+          <p className="text-text-muted">Aura is high. You&apos;re locked in for Section {userTicket.section}.</p>
         </header>
 
         {/* Digital Ticket Card */}

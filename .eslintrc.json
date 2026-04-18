@@ -12,6 +12,7 @@
       "warn",
       {
         "allow": [
+          "log",
           "warn",
           "error"
         ]

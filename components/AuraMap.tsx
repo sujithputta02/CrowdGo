@@ -39,6 +39,69 @@ export default function AuraMap({
   const [markers, setMarkers] = useState<any[]>([]);
 
   useEffect(() => {
+    const fetchPOIs = async (currentMap: any, MarkerClass: any, PinClass: any) => {
+      try {
+        const { Place } = await importLibrary("places") as any;
+        
+        const categoryTypes = [
+          { type: 'restaurant', color: '#fbbf24', label: 'Snacks', id: 'food' },
+          { type: 'cafe', color: '#fbbf24', label: 'Snacks', id: 'food' },
+          { type: 'tourist_attraction', color: '#2dd4bf', label: 'Restroom', id: 'restroom' },
+          { type: 'stadium', color: '#8b5cf6', label: 'Info', id: 'info' }
+        ];
+
+        const newMarkers: any[] = [];
+
+        for (const cat of categoryTypes) {
+          const request = {
+            fields: ['displayName', 'location', 'businessStatus', 'types'],
+            locationRestriction: {
+              center: MapsService.WANKHEDE,
+              radius: 300,
+            },
+            includedPrimaryTypes: [cat.type],
+            maxResultCount: 15,
+          };
+
+          const { places } = await Place.searchNearby(request);
+
+          if (places) {
+            places.forEach((place: any) => {
+              const pin = new PinClass({
+                background: cat.color,
+                borderColor: '#fff',
+                glyphColor: '#fff',
+                scale: 0.8
+              });
+
+              const marker = new MarkerClass({
+                map: currentMap,
+                position: place.location,
+                title: place.displayName,
+                content: pin, // Use the PinElement instance directly as per the latest SDK warning
+                zIndex: 100
+              });
+              
+              marker.addListener('gmp-click', () => {
+                if (onPoiClick) {
+                  onPoiClick(
+                    { lat: place.location.lat(), lng: place.location.lng() }, 
+                    place.displayName
+                  );
+                }
+              });
+
+              (marker as any).auraCategory = cat.id;
+              newMarkers.push(marker);
+            });
+          }
+        }
+        setMarkers(newMarkers);
+      } catch (err) {
+        console.warn("POI Fetching skipped:", err);
+      }
+    };
+
     const initMap = async () => {
       try {
         const { Map, InfoWindow } = await importLibrary("maps") as any;
@@ -71,70 +134,7 @@ export default function AuraMap({
     };
 
     initMap();
-  }, []);
-
-  const fetchPOIs = async (currentMap: any, MarkerClass: any, PinClass: any) => {
-    try {
-      const { Place } = await importLibrary("places") as any;
-      
-      const categoryTypes = [
-        { type: 'restaurant', color: '#fbbf24', label: 'Snacks', id: 'food' },
-        { type: 'cafe', color: '#fbbf24', label: 'Snacks', id: 'food' },
-        { type: 'tourist_attraction', color: '#2dd4bf', label: 'Restroom', id: 'restroom' },
-        { type: 'stadium', color: '#8b5cf6', label: 'Info', id: 'info' }
-      ];
-
-      const newMarkers: any[] = [];
-
-      for (const cat of categoryTypes) {
-        const request = {
-          fields: ['displayName', 'location', 'businessStatus', 'types'],
-          locationRestriction: {
-            center: MapsService.WANKHEDE,
-            radius: 300,
-          },
-          includedPrimaryTypes: [cat.type],
-          maxResultCount: 15,
-        };
-
-        const { places } = await Place.searchNearby(request);
-
-        if (places) {
-          places.forEach((place: any) => {
-            const pin = new PinClass({
-              background: cat.color,
-              borderColor: '#fff',
-              glyphColor: '#fff',
-              scale: 0.8
-            });
-
-            const marker = new MarkerClass({
-              map: currentMap,
-              position: place.location,
-              title: place.displayName,
-              content: pin, // Use the PinElement instance directly as per the latest SDK warning
-              zIndex: 100
-            });
-            
-            marker.addListener('gmp-click', () => {
-              if (onPoiClick) {
-                onPoiClick(
-                  { lat: place.location.lat(), lng: place.location.lng() }, 
-                  place.displayName
-                );
-              }
-            });
-
-            (marker as any).auraCategory = cat.id;
-            newMarkers.push(marker);
-          });
-        }
-      }
-      setMarkers(newMarkers);
-    } catch (err) {
-      console.warn("POI Fetching skipped:", err);
-    }
-  };
+  }, [center, zoom, mapType, map, onPoiClick]);
 
   // Sync Category Visibility
   useEffect(() => {
@@ -182,7 +182,7 @@ export default function AuraMap({
         newPath.setMap(null);
       };
     }
-  }, [polyline, map, isNightMode]);
+  }, [polyline, map, isNightMode, center.lat, center.lng]);
 
   return (
     <div 

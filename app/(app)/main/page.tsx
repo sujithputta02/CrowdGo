@@ -46,7 +46,8 @@ export default function AppPage() {
   // AI Prediction Bridge: Trigger Aura thinking when data shifts
   // Optimized with Debounce + AbortController to prevent request congestion during floods
   useEffect(() => {
-    if (!venueData?.services?.[0]) return;
+    const topService = venueData?.services?.[0];
+    if (!topService) return;
 
     const controller = new AbortController();
     
@@ -54,9 +55,9 @@ export default function AppPage() {
       setIsThinking(true);
       try {
         const res = await PredictionService.getQueueStatus(
-          venueData.services[0].id,
-          venueData.services[0].wait,
-          venueData.services[0].type as any,
+          topService.id,
+          topService.wait,
+          topService.type as any,
           controller.signal
         );
         setPrediction(res);
@@ -73,7 +74,7 @@ export default function AppPage() {
       clearTimeout(debounceTimer);
       controller.abort();
     };
-  }, [venueData?.services?.[0]?.wait]); // Only trigger when the top service's wait time actually changes
+  }, [venueData?.services]);
 
   const userTicket = profile?.ticket || { section: '---', gate: '-', row: '-', seat: '-' };
   const services = venueData?.services || [];

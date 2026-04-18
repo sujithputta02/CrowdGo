@@ -179,7 +179,7 @@ export default function LandingPage() {
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black mb-6 font-heading">THE PLAYBOOK FOR <span className="gradient-text">W FLOW.</span></h2>
             <p className="text-text-muted max-w-2xl mx-auto text-lg leading-relaxed">
-              We tracked the crowd so you don't have to. Maximize your stadium aura with real-time intelligence.
+              We tracked the crowd so you don&apos;t have to. Maximize your stadium aura with real-time intelligence.
             </p>
           </div>
 
@@ -246,7 +246,7 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <p className="font-bold">Real-time Surge Alerts</p>
-                  <p className="text-sm text-text-muted italic">Detect bottlenecks before they turn into L's.</p>
+                  <p className="text-sm text-text-muted italic">Detect bottlenecks before they turn into L&apos;s.</p>
                 </div>
               </li>
               <li className="flex items-start gap-4">
@@ -315,7 +315,7 @@ export default function LandingPage() {
         <div className="container mx-auto">
           <h2 className="text-5xl md:text-7xl font-black mb-12 font-heading tracking-tighter">UPGRADE TO <span className="gradient-text">W VIBES.</span></h2>
           <p className="text-text-muted mb-16 max-w-xl mx-auto text-xl">
-            Don't let L lines ruin your match day. Join the next generation of smart stadium movement.
+            Don&apos;t let L lines ruin your match day. Join the next generation of smart stadium movement.
           </p>
           <div className="flex flex-col md:flex-row gap-6 justify-center">
             <button className="px-12 py-6 bg-white text-black rounded-3xl font-black text-xl hover:scale-105 transition-transform flex items-center justify-center gap-4">
