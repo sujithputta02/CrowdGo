@@ -1,4 +1,5 @@
 import { db } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
 
 export type IncidentType = 'queue' | 'safety' | 'facility' | 'medical' | 'crowd';
 export type IncidentSeverity = 'low' | 'medium' | 'high' | 'critical';
@@ -66,7 +67,11 @@ export const IncidentService = {
 
     await incidentRef.set(newIncident);
     
-    console.log(`Incident created: ${newIncident.id} [${newIncident.severity}] ${newIncident.type}`);
+    logger.info('Incident created', { 
+      incidentId: newIncident.id, 
+      severity: newIncident.severity, 
+      type: newIncident.type 
+    });
     
     return newIncident;
   },
@@ -74,7 +79,7 @@ export const IncidentService = {
   /**
    * Get all active incidents
    */
-  async getActiveIncidents(venueId: string = 'wankhede'): Promise<Incident[]> {
+  async getActiveIncidents(): Promise<Incident[]> {
     const firestore = db();
     const snapshot = await firestore
       .collection('incidents')
@@ -84,7 +89,10 @@ export const IncidentService = {
       .limit(50)
       .get();
 
-    return snapshot.docs.map((doc: any) => doc.data() as Incident);
+    return snapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    } as Incident));
   },
 
   /**
@@ -96,7 +104,7 @@ export const IncidentService = {
     assignedTo?: string
   ): Promise<void> {
     const firestore = db();
-    const updates: any = {
+    const updates: Partial<Incident> = {
       status,
       updatedAt: new Date(),
     };
@@ -111,7 +119,7 @@ export const IncidentService = {
 
     await firestore.collection('incidents').doc(incidentId).update(updates);
     
-    console.log(`Incident ${incidentId} updated to ${status}`);
+    logger.info('Incident status updated', { incidentId, status });
   },
 
   /**
@@ -129,7 +137,7 @@ export const IncidentService = {
 
     await taskRef.set(newTask);
     
-    console.log(`Task created: ${newTask.id} for ${newTask.assignedTo}`);
+    logger.info('Staff task created', { taskId: newTask.id, assignedTo: newTask.assignedTo });
     
     return newTask;
   },
@@ -147,7 +155,10 @@ export const IncidentService = {
       .orderBy('createdAt', 'desc')
       .get();
 
-    return snapshot.docs.map((doc: any) => doc.data() as StaffTask);
+    return snapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    } as StaffTask));
   },
 
   /**
@@ -155,7 +166,7 @@ export const IncidentService = {
    */
   async updateTaskStatus(taskId: string, status: StaffTask['status']): Promise<void> {
     const firestore = db();
-    const updates: any = {
+    const updates: Partial<StaffTask> = {
       status,
     };
 
@@ -167,29 +178,29 @@ export const IncidentService = {
 
     await firestore.collection('staff_tasks').doc(taskId).update(updates);
     
-    console.log(`Task ${taskId} updated to ${status}`);
+    logger.info('Task status updated', { taskId, status });
   },
 
   /**
    * Get venue health metrics
    */
-  async getVenueHealth(venueId: string = 'wankhede'): Promise<VenueHealth> {
+  async getVenueHealth(): Promise<VenueHealth> {
     const firestore = db();
     // Get active incidents
-    const incidents = await this.getActiveIncidents(venueId);
+    const incidents = await this.getActiveIncidents();
     const criticalIncidents = incidents.filter(i => i.severity === 'critical').length;
 
     // Get queue data from Firestore
     const queueSnapshot = await firestore
       .collection('queue_snapshots')
-      .where('venueId', '==', venueId)
+      .where('venueId', '==', 'wankhede')
       .orderBy('timestamp', 'desc')
       .limit(10)
       .get();
 
-    const queues = queueSnapshot.docs.map((doc: any) => doc.data());
+    const queues = queueSnapshot.docs.map((doc) => doc.data());
     const avgQueueTime = queues.length > 0
-      ? queues.reduce((sum: number, q: any) => sum + (q.waitTime || 0), 0) / queues.length
+      ? queues.reduce((sum, q) => sum + ((q.waitTime as number) || 0), 0) / queues.length
       : 0;
 
     // Calculate crowd level (0-100)
@@ -207,9 +218,9 @@ export const IncidentService = {
 
     // Find zones at capacity
     const zonesAtCapacity = queues
-      .filter((q: any) => q.waitTime > 15)
-      .map((q: any) => q.zone)
-      .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i);
+      .filter((q) => ((q.waitTime as number) || 0) > 15)
+      .map((q) => q.zone as string)
+      .filter((v, i, a) => a.indexOf(v) === i);
 
     return {
       overallStatus,

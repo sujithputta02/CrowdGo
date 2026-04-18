@@ -2,24 +2,45 @@
  * Prediction Service
  * Derives real-time queue states from live venue data.
  */
+
+import { logger } from '../logger.client';
+import { getErrorMessage } from '../types/errors';
+
+export type FacilityType = 'gate' | 'pos';
+export type ConfidenceLevel = 'high' | 'medium' | 'low';
+
 export interface QueueState {
   facilityId: string;
   waitRange: string;
   estimatedWaitMinutes: number;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: ConfidenceLevel;
   auraReason?: string;
   lastUpdated: string;
 }
+
+interface PredictionResponse {
+  predictedWait: number;
+  confidence: ConfidenceLevel;
+  auraReason: string;
+  engine: string;
+}
+
+const PREDICTION_TIMEOUT_MS = 5000;
+const FALLBACK_WAIT_BUFFER = 3;
 
 export const PredictionService = {
   /**
    * Processes live wait times into AI-driven predictive states.
    */
-  getQueueStatus: async (facilityId: string, currentWait: number, type: 'gate' | 'pos' = 'pos', signal?: AbortSignal): Promise<QueueState> => {
+  getQueueStatus: async (
+    facilityId: string, 
+    currentWait: number, 
+    type: FacilityType = 'pos', 
+    signal?: AbortSignal
+  ): Promise<QueueState> => {
     try {
-      // Use our internal Intelligence Proxy (Vertex AI surrogate)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), PREDICTION_TIMEOUT_MS);
 
       const response = await fetch('/api/v1/predict', {
         method: 'POST',
@@ -34,11 +55,10 @@ export const PredictionService = {
         throw new Error(`AI Proxy returned ${response.status}`);
       }
       
-      const prediction = await response.json();
+      const prediction: PredictionResponse = await response.json();
       
-      // Handle fallback response from server
       if (prediction.engine === 'fallback') {
-        console.warn('[PredictionService] Server returned fallback response');
+        logger.warn('Prediction service returned fallback response');
       }
 
       return {
@@ -49,16 +69,14 @@ export const PredictionService = {
         auraReason: prediction.auraReason,
         lastUpdated: new Date().toISOString()
       };
-    } catch (error: any) {
-      // Only log non-abort errors
-      if (error.name !== 'AbortError') {
-        console.warn('[PredictionService] Fallback triggered:', error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        logger.warn('Prediction service fallback triggered', { error: getErrorMessage(error) });
       }
       
-      // Clean fallback if AI is unreachable
       return {
         facilityId,
-        waitRange: `${currentWait}-${currentWait + 3} mins`,
+        waitRange: `${currentWait}-${currentWait + FALLBACK_WAIT_BUFFER} mins`,
         estimatedWaitMinutes: currentWait,
         confidence: 'low',
         auraReason: "Standard estimate (AI temporarily offline)",

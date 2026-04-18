@@ -2,11 +2,10 @@ import {
   doc, 
   getDoc, 
   setDoc, 
-  updateDoc,
-  collection,
-  onSnapshot
+  updateDoc
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { logger } from "./logger.client";
 
 // --- Types ---
 export interface UserProfile {
@@ -71,7 +70,7 @@ export const seedVenueData = async () => {
   const venueSnap = await getDoc(venueRef);
 
   if (!venueSnap.exists()) {
-    console.log("Seeding Venue Data: Wankhede...");
+    logger.info("Seeding Venue Data: Wankhede");
     await setDoc(venueRef, {
       name: "Wankhede Stadium",
       activeMatch: {
@@ -134,7 +133,7 @@ export const syncUserProfile = async (uid: string, email: string) => {
   const userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
-    console.log("Initializing New User Profile:", uid);
+    logger.info("Initializing New User Profile", { uid });
     const newProfile: UserProfile = {
       uid,
       email,
@@ -162,7 +161,11 @@ export const syncUserProfile = async (uid: string, email: string) => {
   return userSnap.data() as UserProfile;
 };
 
-export const updateUserSetting = async (uid: string, path: string, value: any) => {
+export const updateUserSetting = async (
+  uid: string, 
+  path: string, 
+  value: string | number | boolean | Record<string, unknown>
+) => {
   const userRef = doc(db, "users", uid);
   await updateDoc(userRef, { [path]: value });
 };

@@ -1,16 +1,23 @@
 import { db } from '@/lib/firebase-admin';
+import { logger } from '@/lib/logger';
+import { firestoreDocToData, FirestoreQueryResult } from '@/lib/types/firestore';
+import { Query, QuerySnapshot, DocumentData } from 'firebase-admin/firestore';
+
+export type RecommendationType = 'gate' | 'concession' | 'restroom' | 'route' | 'exit' | 'general';
+export type FeedbackRating = 1 | 2 | 3 | 4 | 5;
+export type IssueType = 'inaccurate' | 'confusing' | 'unhelpful' | 'other';
 
 export interface Feedback {
   id: string;
   userId: string;
   recommendationId?: string;
-  recommendationType: 'gate' | 'concession' | 'restroom' | 'route' | 'exit' | 'general';
-  rating: 1 | 2 | 3 | 4 | 5;
+  recommendationType: RecommendationType;
+  rating: FeedbackRating;
   helpful: boolean;
   comment?: string;
   actualWaitTime?: number;
   expectedWaitTime?: number;
-  issueType?: 'inaccurate' | 'confusing' | 'unhelpful' | 'other';
+  issueType?: IssueType;
   createdAt: Date;
   venueId: string;
   sessionId?: string;
@@ -42,7 +49,7 @@ export const FeedbackService = {
 
     await feedbackRef.set(newFeedback);
     
-    console.log(`Feedback submitted: ${newFeedback.id} [Rating: ${newFeedback.rating}]`);
+    logger.info('Feedback submitted', { feedbackId: newFeedback.id, rating: newFeedback.rating });
     
     return newFeedback;
   },
@@ -56,7 +63,7 @@ export const FeedbackService = {
     endDate?: Date
   ): Promise<FeedbackMetrics> {
     const firestore = db();
-    let query: any = firestore
+    let query: Query<DocumentData> = firestore
       .collection('feedback')
       .where('venueId', '==', venueId);
 
@@ -67,8 +74,8 @@ export const FeedbackService = {
       query = query.where('createdAt', '<=', endDate);
     }
 
-    const snapshot = await query.get();
-    const feedbacks = snapshot.docs.map((doc: any) => doc.data() as Feedback);
+    const snapshot: QuerySnapshot<DocumentData> = await query.get();
+    const feedbacks: Feedback[] = snapshot.docs.map((doc) => doc.data() as Feedback);
 
     if (feedbacks.length === 0) {
       return {
@@ -135,12 +142,12 @@ export const FeedbackService = {
    * Get recent feedback for a specific recommendation type
    */
   async getFeedbackByType(
-    recommendationType: Feedback['recommendationType'],
+    recommendationType: RecommendationType,
     venueId: string = 'wankhede',
     limit: number = 50
   ): Promise<Feedback[]> {
     const firestore = db();
-    const snapshot = await firestore
+    const snapshot: QuerySnapshot<DocumentData> = await firestore
       .collection('feedback')
       .where('venueId', '==', venueId)
       .where('recommendationType', '==', recommendationType)
@@ -148,7 +155,7 @@ export const FeedbackService = {
       .limit(limit)
       .get();
 
-    return snapshot.docs.map((doc: any) => doc.data() as Feedback);
+    return snapshot.docs.map((doc) => doc.data() as Feedback);
   },
 
   /**
@@ -157,14 +164,14 @@ export const FeedbackService = {
   async trackAcceptance(
     userId: string,
     recommendationId: string,
-    recommendationType: Feedback['recommendationType'],
+    recommendationType: RecommendationType,
     venueId: string = 'wankhede'
   ): Promise<void> {
     await this.submitFeedback({
       userId,
       recommendationId,
       recommendationType,
-      rating: 5, // Implicit 5-star for acceptance
+      rating: 5,
       helpful: true,
       venueId,
     });
@@ -176,14 +183,14 @@ export const FeedbackService = {
   async trackRejection(
     userId: string,
     recommendationId: string,
-    recommendationType: Feedback['recommendationType'],
+    recommendationType: RecommendationType,
     venueId: string = 'wankhede'
   ): Promise<void> {
     await this.submitFeedback({
       userId,
       recommendationId,
       recommendationType,
-      rating: 2, // Implicit low rating for rejection
+      rating: 2,
       helpful: false,
       venueId,
     });

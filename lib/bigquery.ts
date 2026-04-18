@@ -1,17 +1,44 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import fs from 'fs';
 import path from 'path';
+import { logger } from './logger';
+import { getErrorMessage } from './types/errors';
 
 /**
  * BigQuery Analytics Warehouse Service
  * Handles long-term archival of stadium events and KPI reporting.
  */
+
+interface BigQueryRow {
+  event_type: string;
+  payload: string;
+  timestamp: string;
+  venue_id: string;
+  wait_time_minutes: number;
+  processed_at: string;
+}
+
+interface BusiestGateResult {
+  gate_id: string;
+  scan_count: number;
+}
+
+interface SurgeCountResult {
+  recent_count: number;
+}
+
+interface EventPayload {
+  type: string;
+  payload: Record<string, unknown>;
+  timestamp: string;
+  venue_id: string;
+}
+
 let _bigquery: BigQuery | null = null;
 
-function getBigQueryClient() {
+function getBigQueryClient(): BigQuery {
   if (_bigquery) return _bigquery;
 
-  console.log('--- BQ AUTH: JSON-FILE ---');
+  logger.debug('Initializing BigQuery client with JSON key file');
   
   try {
     const keyPath = path.join(process.cwd(), 'gcp-key.json');
@@ -20,7 +47,7 @@ function getBigQueryClient() {
       keyFilename: keyPath,
     });
   } catch (err) {
-    console.error('CRITICAL: Failed to initialize BQ client with JSON file:', err);
+    logger.critical('Failed to initialize BigQuery client', err);
     throw err;
   }
 
@@ -29,49 +56,44 @@ function getBigQueryClient() {
 
 const DATASET_ID = 'crowdgo_analytics';
 const TABLE_ID = 'stadium_events';
+const SURGE_CACHE_TTL = 5000; // 5 seconds
 
 // In-memory cache for surge trends to prevent BQ flooding
 const surgeCache = new Map<string, { count: number; timestamp: number }>();
-const SURGE_CACHE_TTL = 5000; // 5 seconds
 
 export const BigQueryService = {
   /**
    * Streams a row of event data to BigQuery for long-term analytics and surge prediction history.
-   * 
-   * @param event - The event object containing type, payload, and stadium context
    */
-  async streamEvent(event: {
-    type: string,
-    payload: any,
-    timestamp: string,
-    venue_id: string
-  }) {
+  async streamEvent(event: EventPayload): Promise<void> {
     try {
       const bq = getBigQueryClient();
       const dataset = bq.dataset(DATASET_ID);
       const table = dataset.table(TABLE_ID);
 
-      const row = {
+      const row: BigQueryRow = {
         event_type: event.type,
         payload: JSON.stringify(event.payload),
         timestamp: event.timestamp,
         venue_id: event.venue_id,
-        wait_time_minutes: event.payload?.wait || event.payload?.wait_time || 0,
+        wait_time_minutes: (event.payload?.wait as number) || (event.payload?.wait_time as number) || 0,
         processed_at: new Date().toISOString()
       };
 
-      console.log(`BQ: Archiving event ${event.type} [Wait: ${row.wait_time_minutes} min]...`);
+      logger.debug('Archiving event to BigQuery', { 
+        eventType: event.type, 
+        waitTime: row.wait_time_minutes 
+      });
       await table.insert([row]);
     } catch (error) {
-      // If table doesn't exist, we skip but log (production would handle schema creation)
-      console.warn('BigQuery Streaming skipped (Table might not exist):', error);
+      logger.warn('BigQuery streaming skipped - table may not exist', { error: getErrorMessage(error) });
     }
   },
 
   /**
    * Runs a KPI query for the operations dashboard
    */
-  async getBusiestGate(): Promise<any> {
+  async getBusiestGate(): Promise<BusiestGateResult | null> {
     const bq = getBigQueryClient();
     const query = `
       SELECT 
@@ -91,20 +113,17 @@ export const BigQueryService = {
     };
 
     const [rows] = await bq.query(options);
-    return rows[0] || null;
+    return (rows[0] as BusiestGateResult) || null;
   },
 
   /**
    * Calculates the current surge momentum based on recent history.
-   * Compares the frequency of events (Gate Scans/POS) in the last 15 minutes.
-   * 
-   * @param eventType - The category of events to analyze ('GATE_SCAN' or 'POS_SALE')
-   * @returns The count of recent events, used as a momentum multiplier for wait times
    */
   async getHistoricalSurgeTrend(eventType: string): Promise<number> {
     try {
       const cacheKey = eventType;
       const now = Date.now();
+      
       if (surgeCache.has(cacheKey)) {
         const cached = surgeCache.get(cacheKey)!;
         if (now - cached.timestamp < SURGE_CACHE_TTL) {
@@ -127,12 +146,12 @@ export const BigQueryService = {
       };
 
       const [rows] = await bq.query(options);
-      const count = rows[0]?.recent_count || 0;
+      const count = (rows[0] as SurgeCountResult)?.recent_count || 0;
       
       surgeCache.set(cacheKey, { count, timestamp: now });
       return count;
     } catch (error) {
-       console.warn("Surge Trend Query Failed:", error);
+       logger.warn("Surge trend query failed", { error: getErrorMessage(error) });
        return 0;
     }
   }

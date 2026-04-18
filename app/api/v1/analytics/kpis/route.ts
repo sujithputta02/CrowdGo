@@ -1,25 +1,45 @@
 import { NextResponse } from "next/server";
 import { BigQueryService } from "@/lib/bigquery";
+import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types/errors";
 
 /**
  * Analytics KPI Endpoint
  * Returns high-level insights derived from BigQuery long-term storage.
  */
-export async function GET() {
+
+interface BusiestGateResult {
+  gate_id: string;
+  scan_count: number;
+}
+
+interface KPIResponse {
+  busiestGate: BusiestGateResult;
+  lastAnalysisTimestamp: string;
+  venueId: string;
+}
+
+export async function GET(): Promise<NextResponse<KPIResponse>> {
   try {
     const busiestGate = await BigQueryService.getBusiestGate();
     
-    // We can expand this to include historical averages, 
-    // revenue peaks from POS data, and incident hotspots.
-    const kpis = {
+    const kpis: KPIResponse = {
       busiestGate: busiestGate || { gate_id: 'None', scan_count: 0 },
       lastAnalysisTimestamp: new Date().toISOString(),
       venueId: 'wankhede'
     };
 
     return NextResponse.json(kpis);
-  } catch (error: any) {
-    console.error("KPI Analysis Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    logger.error("KPI Analysis Error", error);
+    return NextResponse.json(
+      { 
+        error: getErrorMessage(error),
+        busiestGate: { gate_id: 'None', scan_count: 0 },
+        lastAnalysisTimestamp: new Date().toISOString(),
+        venueId: 'wankhede'
+      } as KPIResponse, 
+      { status: 500 }
+    );
   }
 }

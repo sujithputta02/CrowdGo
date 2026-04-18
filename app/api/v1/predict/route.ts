@@ -3,21 +3,50 @@ import { BigQueryService } from '@/lib/bigquery';
 import { VertexAIService } from '@/lib/vertex';
 import { MonitoringService } from '@/lib/monitoring';
 import { GeminiService } from '@/lib/gemini';
+import { logger } from '@/lib/logger';
+import { getErrorMessage, ValidationError } from '@/lib/types/errors';
 
 /**
  * AI Prediction Proxy
  * Calculates 'True Wait' times by combining live Firestore states 
  * with either Real Vertex AI or a high-fidelity surrogate.
  */
-export async function POST(req: NextRequest) {
+
+interface PredictRequest {
+  facilityId: string;
+  type: 'gate' | 'pos';
+  currentWait: number;
+}
+
+interface PredictResponse {
+  facilityId: string;
+  originalWait: number;
+  predictedWait: number;
+  confidence: 'low' | 'medium' | 'high';
+  auraReason: string;
+  engine: 'vertex-ai' | 'surrogate' | 'fallback';
+  momentumFactors?: {
+    recentArchivedEvents: number;
+    surgeFactor: string;
+  };
+  timestamp: string;
+}
+
+const BIGQUERY_TIMEOUT_MS = 3000;
+const VERTEX_TIMEOUT_MS = 3000;
+const GEMINI_TIMEOUT_MS = 2000;
+const SURGE_THRESHOLD_HIGH = 300;
+const SURGE_THRESHOLD_MEDIUM = 100;
+const SURGE_THRESHOLD_CRITICAL = 200;
+
+export async function POST(req: NextRequest): Promise<NextResponse<PredictResponse>> {
   try {
-    const { facilityId, type, currentWait } = await req.json();
+    const body: PredictRequest = await req.json();
+    const { facilityId, type, currentWait } = body;
 
     // Validate input
     if (!facilityId || currentWait === undefined) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: facilityId, currentWait' 
-      }, { status: 400 });
+      throw new ValidationError('Missing required fields: facilityId, currentWait');
     }
 
     let recentCount = 0;
@@ -27,13 +56,13 @@ export async function POST(req: NextRequest) {
     try {
       const eventType = type === 'gate' ? 'GATE_SCAN' : 'POS_SALE';
       const bqPromise = BigQueryService.getHistoricalSurgeTrend(eventType);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('BigQuery timeout')), 3000)
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('BigQuery timeout')), BIGQUERY_TIMEOUT_MS)
       );
-      recentCount = await Promise.race([bqPromise, timeoutPromise]) as number;
+      recentCount = await Promise.race([bqPromise, timeoutPromise]);
     } catch (bqError) {
-      console.warn('[Predict API] BigQuery unavailable, using default momentum');
-      recentCount = 0; // Default to no surge data
+      logger.warn('BigQuery unavailable, using default momentum');
+      recentCount = 0;
     }
 
     // 2. Try Real Vertex AI Prediction (with timeout)
@@ -43,8 +72,8 @@ export async function POST(req: NextRequest) {
         recent_scans: recentCount,
         stadium: 'wankhede'
       });
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Vertex AI timeout')), 3000)
+      const timeoutPromise = new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Vertex AI timeout')), VERTEX_TIMEOUT_MS)
       );
       realAIData = await Promise.race([vertexPromise, timeoutPromise]);
 
@@ -59,14 +88,14 @@ export async function POST(req: NextRequest) {
           facilityId,
           originalWait: currentWait,
           predictedWait: Math.round(realAIData.predicted_wait || realAIData.wait || currentWait),
-          confidence: realAIData.confidence || 'medium',
+          confidence: (realAIData.confidence as 'low' | 'medium' | 'high') || 'medium',
           auraReason: realAIData.reason || "AI analyzing live crowd trajectory.",
           engine: 'vertex-ai',
           timestamp: new Date().toISOString()
         });
       }
     } catch (vertexError) {
-      console.warn('[Predict API] Vertex AI unavailable, using surrogate logic');
+      logger.warn('Vertex AI unavailable, using surrogate logic');
     }
 
     // 3. Fallback: Surrogate Logic (Rule-based with BigQuery data if available)
@@ -78,8 +107,10 @@ export async function POST(req: NextRequest) {
 
     const surgeMultiplier = recentCount > 0 ? 1 + (recentCount / 500) : 1.1;
     const predictedWait = Math.round(currentWait * surgeMultiplier);
-    const confidence = recentCount > 300 ? 'high' : recentCount > 100 ? 'medium' : 'low';
-    const isSurge = recentCount > 200;
+    const confidence: 'low' | 'medium' | 'high' = 
+      recentCount > SURGE_THRESHOLD_HIGH ? 'high' : 
+      recentCount > SURGE_THRESHOLD_MEDIUM ? 'medium' : 'low';
+    const isSurge = recentCount > SURGE_THRESHOLD_CRITICAL;
 
     // 4. Try to Generate Gemini "Aura Reasoning" (with timeout)
     let auraReason = isSurge 
@@ -95,12 +126,12 @@ export async function POST(req: NextRequest) {
         isSurge
       });
       const timeoutPromise = new Promise<null>((resolve) => 
-        setTimeout(() => resolve(null), 2000)
+        setTimeout(() => resolve(null), GEMINI_TIMEOUT_MS)
       );
       const gReason = await Promise.race([geminiPromise, timeoutPromise]);
       if (gReason) auraReason = gReason;
     } catch (gErr) {
-      console.warn('[Predict API] Gemini reasoning unavailable, using default');
+      logger.warn('Gemini reasoning unavailable, using default');
     }
 
     return NextResponse.json({
@@ -117,9 +148,9 @@ export async function POST(req: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error: any) {
-    console.error('[Predict API] Critical error:', error);
-    MonitoringService.log('Prediction Proxy Error', 'ERROR', { error: error.message });
+  } catch (error: unknown) {
+    logger.error('Prediction API critical error', error);
+    MonitoringService.log('Prediction Proxy Error', 'ERROR', { error: getErrorMessage(error) });
     
     // Return a safe fallback response instead of 500 error
     return NextResponse.json({
@@ -130,6 +161,6 @@ export async function POST(req: NextRequest) {
       auraReason: 'Using baseline estimate. AI services temporarily unavailable.',
       engine: 'fallback',
       timestamp: new Date().toISOString()
-    }, { status: 200 }); // Return 200 to prevent client-side errors
+    }, { status: 200 });
   }
 }

@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { ApiResponseHandler } from './api-response';
+import { logger } from './logger';
 
 // Initialize Firebase Admin
 const firebaseAdminConfig = {
@@ -35,7 +36,7 @@ export async function verifyToken(request: NextRequest): Promise<{ uid: string }
     const decodedToken = await getAuth().verifyIdToken(token);
     return { uid: decodedToken.uid };
   } catch (error) {
-    console.error('Token verification failed:', error);
+    logger.error('Token verification failed', error);
     return null;
   }
 }

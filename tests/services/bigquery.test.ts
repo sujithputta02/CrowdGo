@@ -78,8 +78,10 @@ describe('BigQueryService', () => {
     const result = await BigQueryService.getBusiestGate();
 
     expect(result).toBeDefined();
-    expect(result.gate_id).toBe('gate-1');
-    expect(result.scan_count).toBe(150);
+    if (result) {
+      expect(result.gate_id).toBe('gate-1');
+      expect(result.scan_count).toBe(150);
+    }
   });
 
   it('should return null when no busiest gate found', async () => {

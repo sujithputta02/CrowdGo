@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { ApiResponse, ApiError } from './types';
+import { logger } from './logger';
 
 export class ApiResponseHandler {
   /**
@@ -111,7 +112,7 @@ export async function safeHandler<T>(
   try {
     return await handler();
   } catch (error) {
-    console.error('API Error:', error);
+    logger.error('API handler error', error);
     return ApiResponseHandler.internalError() as any;
   }
 }

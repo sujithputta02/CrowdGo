@@ -93,14 +93,14 @@ describe('IncidentService', () => {
         })),
       });
 
-      const incidents = await IncidentService.getActiveIncidents('wankhede');
+      const incidents = await IncidentService.getActiveIncidents();
 
       expect(incidents).toHaveLength(2);
       expect(incidents[0].id).toBe('inc-1');
     });
 
     it('should return empty array when no incidents', async () => {
-      const incidents = await IncidentService.getActiveIncidents('wankhede');
+      const incidents = await IncidentService.getActiveIncidents();
       expect(incidents).toEqual([]);
     });
   });
@@ -309,7 +309,7 @@ describe('IncidentService', () => {
         }),
       });
 
-      const health = await IncidentService.getVenueHealth('wankhede');
+      const health = await IncidentService.getVenueHealth();
 
       expect(health).toBeDefined();
       expect(health.activeIncidents).toBe(3);
@@ -347,7 +347,7 @@ describe('IncidentService', () => {
         }),
       });
 
-      const health = await IncidentService.getVenueHealth('wankhede');
+      const health = await IncidentService.getVenueHealth();
 
       expect(health.overallStatus).toBe('optimal');
       expect(health.activeIncidents).toBe(0);

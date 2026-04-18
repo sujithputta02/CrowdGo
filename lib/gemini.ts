@@ -1,6 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
 import path from 'path';
 import { MonitoringService } from './monitoring';
+import { logger } from './logger';
 
 /**
  * Gemini REST Service (via Vertex AI)
@@ -77,7 +78,11 @@ export const GeminiService = {
 
       if (!response.ok) {
         const errText = await response.text();
-        console.error(`[Gemini Error] HTTP ${response.status} - ID: ${PROJECT_ID} - URL: ${url.toString()}`);
+        logger.error('Gemini REST API error', undefined, { 
+          status: response.status, 
+          projectId: PROJECT_ID, 
+          url: url.toString() 
+        });
         throw new Error(`Vertex AI REST Error: ${response.status} - ${errText}`);
       }
 
@@ -92,7 +97,7 @@ export const GeminiService = {
       MonitoringService.log('Gemini Reasoning Generated (REST)', 'INFO', { facility: context.facilityName });
       return text.trim();
     } catch (error) {
-      console.warn('Gemini REST Reasoning Failed:', (error as Error).message);
+      logger.warn('Gemini REST reasoning failed', { error: (error as Error).message });
       return null;
     }
   }

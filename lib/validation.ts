@@ -4,6 +4,7 @@
  */
 
 import { Location, PredictionRequest, IngestEvent } from './types';
+import { logger } from './logger';
 
 export class ValidationError extends Error {
   constructor(
@@ -18,12 +19,12 @@ export const Validators = {
   /**
    * Validate location coordinates
    */
-  location(value: any): Location {
+  location(value: unknown): Location {
     if (!value || typeof value !== 'object') {
       throw new ValidationError('location', 'Location must be an object');
     }
 
-    const { lat, lng } = value;
+    const { lat, lng } = value as Record<string, unknown>;
 
     if (typeof lat !== 'number' || lat < -90 || lat > 90) {
       throw new ValidationError('location.lat', 'Latitude must be between -90 and 90');
@@ -39,7 +40,7 @@ export const Validators = {
   /**
    * Validate facility ID
    */
-  facilityId(value: any): string {
+  facilityId(value: unknown): string {
     if (typeof value !== 'string' || value.length === 0) {
       throw new ValidationError('facilityId', 'Facility ID must be a non-empty string');
     }
@@ -54,7 +55,7 @@ export const Validators = {
   /**
    * Validate wait time
    */
-  waitTime(value: any): number {
+  waitTime(value: unknown): number {
     if (typeof value !== 'number') {
       throw new ValidationError('waitTime', 'Wait time must be a number');
     }
@@ -69,60 +70,64 @@ export const Validators = {
   /**
    * Validate facility type
    */
-  facilityType(value: any): 'gate' | 'food' | 'restroom' {
+  facilityType(value: unknown): 'gate' | 'food' | 'restroom' {
     const validTypes = ['gate', 'food', 'restroom'];
 
-    if (!validTypes.includes(value)) {
+    if (!validTypes.includes(value as string)) {
       throw new ValidationError('type', `Type must be one of: ${validTypes.join(', ')}`);
     }
 
-    return value;
+    return value as 'gate' | 'food' | 'restroom';
   },
 
   /**
    * Validate prediction request
    */
-  predictionRequest(value: any): PredictionRequest {
+  predictionRequest(value: unknown): PredictionRequest {
     if (!value || typeof value !== 'object') {
       throw new ValidationError('request', 'Request must be an object');
     }
 
+    const req = value as Record<string, unknown>;
+
     return {
-      facilityId: this.facilityId(value.facilityId),
-      type: this.facilityType(value.type),
-      currentWait: this.waitTime(value.currentWait),
+      facilityId: this.facilityId(req.facilityId),
+      type: this.facilityType(req.type),
+      currentWait: this.waitTime(req.currentWait),
     };
   },
 
   /**
    * Validate ingest event
    */
-  ingestEvent(value: any): IngestEvent {
+  ingestEvent(value: unknown): IngestEvent {
     if (!value || typeof value !== 'object') {
       throw new ValidationError('event', 'Event must be an object');
     }
 
+    const event = value as Record<string, unknown>;
+
     const validTypes = ['GATE_SCAN', 'POS_SALE', 'ENTRY', 'EXIT'];
-    if (!validTypes.includes(value.type)) {
+    if (!validTypes.includes(event.type as string)) {
       throw new ValidationError('type', `Type must be one of: ${validTypes.join(', ')}`);
     }
 
-    if (!value.payload || typeof value.payload !== 'object') {
+    if (!event.payload || typeof event.payload !== 'object') {
       throw new ValidationError('payload', 'Payload must be an object');
     }
 
     return {
-      type: value.type,
-      payload: value.payload,
-      timestamp: value.timestamp || Date.now(),
-      facilityId: this.facilityId(value.facilityId),
+      type: event.type as 'GATE_SCAN' | 'POS_SALE' | 'ENTRY' | 'EXIT',
+      payload: event.payload as Record<string, unknown>,
+      timestamp: (event.timestamp as number) || Date.now(),
+      facilityId: this.facilityId(event.facilityId),
     };
   },
 
   /**
    * Validate email
    */
-  email(value: any): string {
+  email(value: unknown): string {
     if (typeof value !== 'string') {
       throw new ValidationError('email', 'Email must be a string');
     }
@@ -138,7 +143,7 @@ export const Validators = {
   /**
    * Validate password
    */
-  password(value: any): string {
+  password(value: unknown): string {
     if (typeof value !== 'string') {
       throw new ValidationError('password', 'Password must be a string');
     }
@@ -153,7 +158,7 @@ export const Validators = {
   /**
    * Validate string with length constraints
    */
-  string(value: any, minLength: number = 1, maxLength: number = 1000): string {
+  string(value: unknown, minLength: number = 1, maxLength: number = 1000): string {
     if (typeof value !== 'string') {
       throw new ValidationError('string', 'Value must be a string');
     }
@@ -172,7 +177,7 @@ export const Validators = {
   /**
    * Validate number within range
    */
-  number(value: any, min: number = -Infinity, max: number = Infinity): number {
+  number(value: unknown, min: number = -Infinity, max: number = Infinity): number {
     if (typeof value !== 'number') {
       throw new ValidationError('number', 'Value must be a number');
     }
@@ -195,7 +200,7 @@ export function validateSafe<T>(
   try {
     return validator();
   } catch (error) {
-    console.warn('Validation error:', error);
+    logger.warn('Validation error', { error });
     return defaultValue;
   }
 }

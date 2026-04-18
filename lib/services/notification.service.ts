@@ -1,4 +1,5 @@
 import { adminMessaging } from '../firebase-admin';
+import { logger } from '../logger';
 
 /**
  * Service to handle Firebase Cloud Messaging (FCM) operations
@@ -8,7 +9,12 @@ export const NotificationService = {
   /**
    * Sends a simple push notification to a specific device token
    */
-  async sendToDevice(token: string, title: string, body: string, data?: any) {
+  async sendToDevice(
+    token: string, 
+    title: string, 
+    body: string, 
+    data?: Record<string, string>
+  ) {
     try {
       const response = await adminMessaging().send({
         token,
@@ -24,10 +30,10 @@ export const NotificationService = {
           },
         },
       });
-      console.log('Successfully sent message:', response);
+      logger.info('Push notification sent successfully', { messageId: response });
       return response;
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Failed to send push notification', error);
       throw error;
     }
   },
@@ -35,7 +41,12 @@ export const NotificationService = {
   /**
    * Sends a notification to a topic (e.g., 'vibe-alerts')
    */
-  async sendToTopic(topic: string, title: string, body: string, data?: any) {
+  async sendToTopic(
+    topic: string, 
+    title: string, 
+    body: string, 
+    data?: Record<string, string>
+  ) {
     try {
       const response = await adminMessaging().send({
         topic,
@@ -45,10 +56,10 @@ export const NotificationService = {
         },
         data: data || {},
       });
-      console.log('Successfully sent topic message:', response);
+      logger.info('Topic notification sent successfully', { topic, messageId: response });
       return response;
     } catch (error) {
-      console.error('Error sending topic message:', error);
+      logger.error('Failed to send topic notification', error, { topic });
       throw error;
     }
   },
@@ -59,10 +70,10 @@ export const NotificationService = {
   async subscribeToTopic(tokens: string | string[], topic: string) {
     try {
       const response = await adminMessaging().subscribeToTopic(tokens, topic);
-      console.log('Successfully subscribed to topic:', response);
+      logger.info('Successfully subscribed to topic', { topic });
       return response;
     } catch (error) {
-      console.error('Error subscribing to topic:', error);
+      logger.error('Failed to subscribe to topic', error, { topic });
       throw error;
     }
   }

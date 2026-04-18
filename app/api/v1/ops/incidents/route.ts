@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IncidentService } from '@/lib/services/incident.service';
 import { apiResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
-    const venueId = request.nextUrl.searchParams.get('venueId') || 'wankhede';
-    
-    const incidents = await IncidentService.getActiveIncidents(venueId);
+    const incidents = await IncidentService.getActiveIncidents();
     
     return apiResponse.success({ incidents });
   } catch (error) {
-    console.error('Get incidents error:', error);
+    logger.error('Failed to fetch incidents', error);
     return apiResponse.error('Failed to fetch incidents', 500);
   }
 }
@@ -39,7 +38,7 @@ export async function POST(request: NextRequest) {
     
     return apiResponse.success({ incident }, 201);
   } catch (error) {
-    console.error('Create incident error:', error);
+    logger.error('Failed to create incident', error);
     return apiResponse.error('Failed to create incident', 500);
   }
 }

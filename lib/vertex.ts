@@ -1,16 +1,35 @@
 import { PredictionServiceClient, helpers } from '@google-cloud/aiplatform';
 import { getSecret } from './gcp-secrets';
 import { MonitoringService } from './monitoring';
+import { logger } from './logger';
+import { getErrorMessage } from './types/errors';
 import path from 'path';
+import { google } from '@google-cloud/aiplatform/build/protos/protos';
 
 /**
  * Production Vertex AI Service
  * Connects to real-time Google Cloud AI Platform endpoints.
  */
+
+interface PredictionInstance {
+  current_wait: number;
+  recent_scans: number;
+  stadium: string;
+}
+
+interface PredictionResult {
+  predicted_wait?: number;
+  wait?: number;
+  confidence?: string;
+  reason?: string;
+}
+
+type IValue = google.protobuf.IValue;
+
 let _client: PredictionServiceClient | null = null;
 let _endpointId: string | null = null;
 
-async function getVertexClient() {
+async function getVertexClient(): Promise<PredictionServiceClient> {
   if (_client) return _client;
 
   try {
@@ -21,7 +40,9 @@ async function getVertexClient() {
     });
     return _client;
   } catch (error) {
-    MonitoringService.log('Vertex AI SDK Initialization Failed', 'ERROR', { error: (error as Error).message });
+    MonitoringService.log('Vertex AI SDK Initialization Failed', 'ERROR', { 
+      error: getErrorMessage(error) 
+    });
     throw error;
   }
 }
@@ -33,7 +54,7 @@ export const VertexAIService = {
   /**
    * Calls the Vertex AI endpoint for a real-time prediction
    */
-  async predict(instance: any): Promise<any> {
+  async predict(instance: PredictionInstance): Promise<PredictionResult | null> {
     const startTime = Date.now();
 
     // 1. Fetch Endpoint ID from Secret Manager or Env
@@ -42,7 +63,7 @@ export const VertexAIService = {
     }
 
     if (!_endpointId) {
-      console.warn("Vertex AI: No ENDPOINT_ID found. Skipping prediction.");
+      logger.warn("Vertex AI: No ENDPOINT_ID found. Skipping prediction.");
       return null;
     }
 
@@ -50,15 +71,15 @@ export const VertexAIService = {
       const client = await getVertexClient();
       const endpoint = `projects/${PROJECT_ID}/locations/${LOCATION}/endpoints/${_endpointId}`;
       
-      const instances = [helpers.toValue(instance) as any];
-      const parameters = helpers.toValue({}) as any;
+      const instances = [helpers.toValue(instance)];
+      const parameters = helpers.toValue({});
 
       MonitoringService.log('Vertex AI Prediction: Started', 'DEBUG', { endpoint });
 
       const [response] = await client.predict({
         endpoint,
-        instances,
-        parameters,
+        instances: instances as any[],
+        parameters: parameters as any,
       });
       
       const duration = Date.now() - startTime;
@@ -69,11 +90,16 @@ export const VertexAIService = {
         return null;
       }
 
-      return helpers.fromValue(response.predictions[0] as any);
+      const prediction = response.predictions[0];
+      if (!prediction) {
+        return null;
+      }
+
+      return helpers.fromValue(prediction as any) as PredictionResult;
     } catch (error) {
       const duration = Date.now() - startTime;
       MonitoringService.log('Vertex AI SDK Error', 'ERROR', {
-        error: (error as Error).message,
+        error: getErrorMessage(error),
         duration_ms: duration
       });
       return null;

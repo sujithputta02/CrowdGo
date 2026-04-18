@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { NIGHT_THEME, DAY_THEME } from '@/lib/maps-theme';
 import { MapsService } from '@/lib/services/maps.service';
+import { logger } from '@/lib/logger.client';
 
 interface AuraMapProps {
   center?: { lat: number, lng: number };
@@ -98,7 +99,7 @@ export default function AuraMap({
         }
         setMarkers(newMarkers);
       } catch (err) {
-        console.warn("POI Fetching skipped:", err);
+        logger.warn("POI fetching skipped", { error: err });
       }
     };
 
@@ -128,7 +129,7 @@ export default function AuraMap({
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("AuraMap: Handshake Error", error);
+        logger.error("AuraMap handshake error", error);
         setIsLoading(false);
       }
     };
@@ -174,7 +175,9 @@ export default function AuraMap({
         if (distance < 20000) {
           map.fitBounds(bounds, 80); // Increased padding
         } else {
-          console.warn(`AuraMap: Route too far (${Math.round(distance)}m). Maintaining venue focus.`);
+          logger.warn('AuraMap route too far from venue, maintaining venue focus', { 
+            distance: Math.round(distance) 
+          });
         }
       }
 

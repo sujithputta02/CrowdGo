@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IncidentService } from '@/lib/services/incident.service';
 import { apiResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     
     return apiResponse.success({ tasks });
   } catch (error) {
-    console.error('Get tasks error:', error);
+    logger.error('Failed to fetch tasks', error);
     return apiResponse.error('Failed to fetch tasks', 500);
   }
 }
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
     
     return apiResponse.success({ task }, 201);
   } catch (error) {
-    console.error('Create task error:', error);
+    logger.error('Failed to create task', error);
     return apiResponse.error('Failed to create task', 500);
   }
 }

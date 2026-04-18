@@ -1,5 +1,6 @@
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 import path from 'path';
+import { logger } from './logger';
 
 /**
  * Secret Manager Client
@@ -17,7 +18,7 @@ function getSecretClient() {
     });
     return _client;
   } catch (error) {
-    console.error('CRITICAL: Secret Manager Client Init Failed:', error);
+    logger.critical('Secret Manager client initialization failed', error);
     throw error;
   }
 }
@@ -38,7 +39,7 @@ export async function getSecret(secretName: string, version: string = 'latest'):
   if (secretCache.has(cacheKey)) {
     const { value, timestamp } = secretCache.get(cacheKey)!;
     if (now - timestamp < CACHE_TTL) {
-      console.log(`[SecretManager] Cache hit: ${secretName}`);
+      logger.debug('Secret Manager cache hit', { secretName });
       return value;
     }
   }
@@ -48,7 +49,7 @@ export async function getSecret(secretName: string, version: string = 'latest'):
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'crowdgo-493512';
     const name = `projects/${projectId}/secrets/${secretName}/versions/${version}`;
 
-    console.log(`[SecretManager] Fetching: ${name}`);
+    logger.debug('Fetching secret from Secret Manager', { secretName });
     const [accessResponse] = await client.accessSecretVersion({ name });
     
     const payload = accessResponse.payload?.data?.toString();
@@ -65,12 +66,12 @@ export async function getSecret(secretName: string, version: string = 'latest'):
     const envFallback = process.env[secretName] || process.env[`NEXT_PUBLIC_${secretName}`];
 
     if (isNotFound && envFallback) {
-      console.warn(`[SecretManager] ${secretName} not found in GCP. Using local ENV fallback.`);
+      logger.warn('Secret not found in GCP, using local ENV fallback', { secretName });
       return envFallback;
     }
 
     if (!isNotFound) {
-      console.error(`[SecretManager] Error fetching ${secretName}:`, error);
+      logger.error('Error fetching secret from Secret Manager', error, { secretName });
     }
     
     if (envFallback) {

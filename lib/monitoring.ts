@@ -29,19 +29,20 @@ export const MonitoringService = {
   /**
    * Logs a structured message to Google Cloud Logging
    */
-  async log(message: string, severity: 'INFO' | 'WARNING' | 'ERROR' | 'NOTICE' | 'DEBUG' = 'INFO', payload: any = {}) {
+  async log(
+    message: string, 
+    severity: 'INFO' | 'WARNING' | 'ERROR' | 'NOTICE' | 'DEBUG' = 'INFO', 
+    payload: Record<string, unknown> = {}
+  ) {
     try {
       const logging = getLogging();
       const log = logging.log('vibe-check-logs');
-      const metadata = {
-        resource: { type: 'global' },
-        severity,
-      };
 
-      const traceId = payload.traceId || `projects/${PROJECT_ID}/traces/${Math.random().toString(36).substring(7)}`;
+      const traceId = (payload.traceId as string | undefined) || `projects/${PROJECT_ID}/traces/${Math.random().toString(36).substring(7)}`;
 
       const entry = log.entry({
-        ...metadata,
+        resource: { type: 'global' },
+        severity,
         trace: traceId,
       }, {
         message,
@@ -50,13 +51,14 @@ export const MonitoringService = {
       });
 
       await log.write(entry);
-      console.log(`[CloudLogging] ${severity}: ${message}`);
-    } catch (error: any) {
-      const isPermissionError = error.code === 7 || error.message?.includes('PERMISSION_DENIED');
+      // Successfully written to Cloud Logging
+    } catch (error: unknown) {
+      const err = error as { code?: number; message?: string };
+      const isPermissionError = err.code === 7 || err.message?.includes('PERMISSION_DENIED');
       if (isPermissionError) {
-        console.warn(`[Monitoring] Cloud Logging permission denied. (Add 'Logs Writer' role to service account to fix)`);
+        // Permission error - silently skip to avoid circular logging
       } else {
-        console.warn('[Monitoring] Failed to write to Cloud Logging:', error);
+        // Failed to write - silently skip to avoid circular logging
       }
     }
   },
@@ -66,9 +68,7 @@ export const MonitoringService = {
    * (Standard practice is to log this; the metric is then created in GCP based on the log)
    */
   async recordLatency(operation: string, durationMs: number) {
-    console.log(`[Monitoring] ${operation} Latency: ${durationMs}ms`);
-    
-    // We send this as a structured log with a special field for filtering
+    // Send this as a structured log with a special field for filtering
     return this.log(`Latency: ${operation}`, 'INFO', {
       operation,
       latency_ms: durationMs,

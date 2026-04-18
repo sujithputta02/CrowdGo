@@ -37,8 +37,9 @@ async function testVertexAI() {
     ]);
     
     if (result) {
+      const typedResult = result as { predicted_wait?: number; wait?: number; confidence?: string };
       console.log('✅ Vertex AI: WORKING');
-      console.log(`   Predicted wait: ${result.predicted_wait || result.wait || 'N/A'}`);
+      console.log(`   Predicted wait: ${typedResult.predicted_wait || typedResult.wait || 'N/A'}`);
       return true;
     } else {
       console.log('⚠️  Vertex AI: Not configured (using fallback)');

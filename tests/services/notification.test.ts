@@ -55,7 +55,7 @@ describe('NotificationService', () => {
   it('should include custom data in notification', async () => {
     const customData = {
       facilityId: 'gate-1',
-      waitTime: 15,
+      waitTime: '15',
     };
 
     const result = await NotificationService.sendToDevice(

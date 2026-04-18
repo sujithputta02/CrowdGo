@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IncidentService } from '@/lib/services/incident.service';
 import { apiResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 
 export async function PATCH(
   request: NextRequest,
@@ -19,7 +20,7 @@ export async function PATCH(
     
     return apiResponse.success({ message: 'Incident updated successfully' });
   } catch (error) {
-    console.error('Update incident error:', error);
+    logger.error('Failed to update incident', error);
     return apiResponse.error('Failed to update incident', 500);
   }
 }

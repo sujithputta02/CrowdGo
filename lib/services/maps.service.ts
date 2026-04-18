@@ -2,6 +2,8 @@
  * Google Maps Positioning & Routing Service
  */
 
+import { logger } from '../logger.client';
+
 export interface LatLng {
   latitude: number;
   longitude: number;
@@ -30,14 +32,14 @@ export const MapsService = {
       });
 
       if (!response.ok) {
-        console.warn('MapsService: Route fetch failed (likely API restriction). Fallback should handle this.');
+        logger.warn('Maps route fetch failed - likely API restriction');
         return null;
       }
       
       const data = await response.json();
       return data.routes?.[0] || null;
     } catch (error) {
-      console.error('MapsService Route Error:', error);
+      logger.error('Maps service route error', error);
       return null;
     }
   },

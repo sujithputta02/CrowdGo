@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FeedbackService } from '@/lib/services/feedback.service';
 import { apiResponse } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     
     return apiResponse.success({ feedback }, 201);
   } catch (error) {
-    console.error('Submit feedback error:', error);
+    logger.error('Failed to submit feedback', error);
     return apiResponse.error('Failed to submit feedback', 500);
   }
 }
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     
     return apiResponse.success({ metrics });
   } catch (error) {
-    console.error('Get feedback metrics error:', error);
+    logger.error('Failed to fetch feedback metrics', error);
     return apiResponse.error('Failed to fetch feedback metrics', 500);
   }
 }

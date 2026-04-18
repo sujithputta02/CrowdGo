@@ -1,16 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll } from 'framer-motion';
 import { 
   Zap, 
-  MapPin, 
-  Clock, 
   Activity, 
   ArrowRight, 
-  Menu, 
-  X, 
   ShieldCheck, 
   Navigation,
   Eye,

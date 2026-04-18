@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import path from 'path';
+import { logger } from './logger';
 
 /**
  * Initializes the Firebase Admin SDK for server-side operations (FCM, Firestore, etc.)
@@ -17,7 +18,7 @@ export function getFirebaseAdmin() {
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     });
   } catch (error) {
-    console.error('CRITICAL: Failed to initialize Firebase Admin SDK:', error);
+    logger.critical('Failed to initialize Firebase Admin SDK', error);
     throw error;
   }
 }
