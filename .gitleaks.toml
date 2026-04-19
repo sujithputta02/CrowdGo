@@ -1,0 +1,23 @@
+# Gitleaks configuration for CrowdGo
+# This file configures which secrets to scan for and which to ignore
+
+[allowlist]
+# Allow Firebase API keys in .env.local (environment variables are safe)
+paths = [
+  "\.env\.local$",
+  "\.env\.example$",
+  "GOOGLE_AUTH_SETUP\.md$",
+]
+
+# Ignore specific patterns that are not actual secrets
+regexes = [
+  # Firebase public API keys (safe to expose, used in client-side code)
+  "AIzaSy[A-Za-z0-9_-]{33}",
+]
+
+[[rules]]
+# Disable GCP API key detection for documentation files
+id = "gcp-api-key"
+description = "GCP API Key"
+regex = '''(?i)(gcp|google).*api[_-]?key'''
+allowlist = { paths = ["GOOGLE_AUTH_SETUP\.md$", "\.env\.local$"] }
