@@ -36,6 +36,17 @@ npm run lint
 
 ---
 
+## 🔒 Security Notice
+
+**Important:** This repository does NOT contain real secrets. All sensitive credentials are managed via:
+- Environment variables (`.env.local` - gitignored)
+- Google Cloud Secret Manager (production)
+- Local key files (gitignored)
+
+📖 **[Read Full Security Notice](./SECURITY_NOTICE.md)** for details on secret management and GitHub secret scanning.
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites

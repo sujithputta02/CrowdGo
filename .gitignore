@@ -20,6 +20,7 @@ gcp-key.json
 service-account-key.json
 secrets.json
 .env*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
