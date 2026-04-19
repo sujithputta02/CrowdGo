@@ -50,9 +50,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<PredictRespon
     }
 
     let recentCount = 0;
-    let realAIData = null;
 
-    // 1. Try to fetch historical momentum from BigQuery (with timeout)
+    // 1. Get historical data from BigQuery (this has 1000 records)
     try {
       const eventType = type === 'gate' ? 'GATE_SCAN' : 'POS_SALE';
       const bqPromise = BigQueryService.getHistoricalSurgeTrend(eventType);
@@ -60,51 +59,13 @@ export async function POST(req: NextRequest): Promise<NextResponse<PredictRespon
         setTimeout(() => reject(new Error('BigQuery timeout')), BIGQUERY_TIMEOUT_MS)
       );
       recentCount = await Promise.race([bqPromise, timeoutPromise]);
+      logger.debug('BigQuery surge trend retrieved', { recentCount, eventType });
     } catch (bqError) {
       logger.warn('BigQuery unavailable, using default momentum');
       recentCount = 0;
     }
 
-    // 2. Try Real Vertex AI Prediction (with timeout)
-    try {
-      const vertexPromise = VertexAIService.predict({
-        current_wait: currentWait,
-        recent_scans: recentCount,
-        stadium: 'wankhede'
-      });
-      const timeoutPromise = new Promise<null>((_, reject) => 
-        setTimeout(() => reject(new Error('Vertex AI timeout')), VERTEX_TIMEOUT_MS)
-      );
-      realAIData = await Promise.race([vertexPromise, timeoutPromise]);
-
-      if (realAIData) {
-        MonitoringService.log(`Vibe Check: Vertex AI active for ${facilityId}`, 'INFO', {
-          facilityId,
-          engine: 'vertex-ai',
-          recentCount
-        });
-
-        return NextResponse.json({
-          facilityId,
-          originalWait: currentWait,
-          predictedWait: Math.round(realAIData.predicted_wait || realAIData.wait || currentWait),
-          confidence: (realAIData.confidence as 'low' | 'medium' | 'high') || 'medium',
-          auraReason: realAIData.reason || "AI analyzing live crowd trajectory.",
-          engine: 'vertex-ai',
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (vertexError) {
-      logger.warn('Vertex AI unavailable, using surrogate logic');
-    }
-
-    // 3. Fallback: Surrogate Logic (Rule-based with BigQuery data if available)
-    MonitoringService.log(`Vibe Check: Using surrogate logic for ${facilityId}`, 'NOTICE', {
-      facilityId,
-      engine: 'surrogate',
-      recentCount
-    });
-
+    // 2. Calculate prediction using surrogate logic with BigQuery data
     const surgeMultiplier = recentCount > 0 ? 1 + (recentCount / 500) : 1.1;
     const predictedWait = Math.round(currentWait * surgeMultiplier);
     const confidence: 'low' | 'medium' | 'high' = 
@@ -112,7 +73,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<PredictRespon
       recentCount > SURGE_THRESHOLD_MEDIUM ? 'medium' : 'low';
     const isSurge = recentCount > SURGE_THRESHOLD_CRITICAL;
 
-    // 4. Try to Generate Gemini "Aura Reasoning" (with timeout)
+    // 3. Generate Aura Reasoning
     let auraReason = isSurge 
       ? `Live surge detected: ${recentCount} scans in the last 15 min. Expect higher demand.`
       : "Crowd patterns stable. Standard wait time expected.";
@@ -133,6 +94,15 @@ export async function POST(req: NextRequest): Promise<NextResponse<PredictRespon
     } catch (gErr) {
       logger.warn('Gemini reasoning unavailable, using default');
     }
+
+    MonitoringService.log(`Prediction: ${facilityId}`, 'INFO', {
+      facilityId,
+      currentWait,
+      predictedWait,
+      confidence,
+      recentCount,
+      engine: 'surrogate'
+    });
 
     return NextResponse.json({
       facilityId,
