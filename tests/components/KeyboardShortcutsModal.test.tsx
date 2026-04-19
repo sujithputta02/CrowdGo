@@ -22,32 +22,33 @@ jest.mock('framer-motion', () => ({
 // Mock getShortcutDisplay
 jest.mock('@/lib/hooks/use-keyboard-shortcuts', () => ({
   getShortcutDisplay: (shortcut: any) => {
-    if (shortcut.key === 'Shift' && shortcut.code === '?') {
+    if (shortcut.key === '?' && shortcut.shift) {
       return 'Shift + ?';
     }
-    return shortcut.key;
+    return shortcut.key.toUpperCase();
   },
 }));
 
 describe('KeyboardShortcutsModal', () => {
   const mockShortcuts: KeyboardShortcut[] = [
     {
-      key: 'Shift',
-      code: '?',
+      key: '?',
+      shift: true,
       description: 'Show keyboard shortcuts',
       category: 'general',
+      action: () => {},
     },
     {
       key: 'ArrowUp',
-      code: 'ArrowUp',
       description: 'Navigate up',
       category: 'navigation',
+      action: () => {},
     },
     {
       key: 'ArrowDown',
-      code: 'ArrowDown',
       description: 'Navigate down',
       category: 'navigation',
+      action: () => {},
     },
   ];
 
@@ -185,8 +186,8 @@ describe('KeyboardShortcutsModal', () => {
     await waitFor(() => {
       const shortcutElements = screen.getAllByText('Shift + ?');
       expect(shortcutElements.length).toBeGreaterThan(0);
-      expect(screen.getByText('ArrowUp')).toBeInTheDocument();
-      expect(screen.getByText('ArrowDown')).toBeInTheDocument();
+      expect(screen.getByText('ARROWUP')).toBeInTheDocument();
+      expect(screen.getByText('ARROWDOWN')).toBeInTheDocument();
     });
   });
 

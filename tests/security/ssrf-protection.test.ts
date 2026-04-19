@@ -297,8 +297,14 @@ describe('SSRF Protection', () => {
   });
 
   describe('validateWebhookURL', () => {
+    const originalEnv = process.env.NODE_ENV;
+
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      process.env = { ...process.env, NODE_ENV: 'development' };
+    });
+
+    afterEach(() => {
+      process.env = { ...process.env, NODE_ENV: originalEnv };
     });
 
     it('should validate valid webhook URLs', () => {
@@ -318,13 +324,13 @@ describe('SSRF Protection', () => {
     });
 
     it('should allow HTTP in development', () => {
-      process.env.NODE_ENV = 'development';
+      process.env = { ...process.env, NODE_ENV: 'development' };
       const result = validateWebhookURL('http://example.com/webhook');
       expect(result).toBe(true);
     });
 
     it('should require HTTPS in production', () => {
-      process.env.NODE_ENV = 'production';
+      process.env = { ...process.env, NODE_ENV: 'production' };
       const result = validateWebhookURL('http://example.com/webhook');
       expect(result).toBe(false);
       expect(logger.warn).toHaveBeenCalledWith(
@@ -334,7 +340,7 @@ describe('SSRF Protection', () => {
     });
 
     it('should allow HTTPS in production', () => {
-      process.env.NODE_ENV = 'production';
+      process.env = { ...process.env, NODE_ENV: 'production' };
       const result = validateWebhookURL('https://example.com/webhook');
       expect(result).toBe(true);
     });
