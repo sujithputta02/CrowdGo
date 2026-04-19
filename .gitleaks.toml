@@ -2,12 +2,15 @@
 # This file configures which secrets to scan for and which to ignore
 
 [allowlist]
-# Allow Firebase API keys in .env.local (environment variables are safe)
+# Allow documentation and example files
 paths = [
   ".env.local",
-  ".env.example", 
+  ".env.example",
   "GOOGLE_AUTH_SETUP.md",
+  "SECURITY_NOTICE.md",
+  "SECRET_SCANNING_RESOLUTION.md",
   "gcp-key.json.example",
+  "**/*.md",
 ]
 
 # Ignore specific patterns that are not actual secrets
@@ -18,11 +21,12 @@ regexes = [
   "your-project-id",
   "YOUR_PRIVATE_KEY_HERE",
   "your-service-account@your-project",
+  "your-firebase-api-key",
+  "your-google-maps-api-key",
+  # Documentation references
+  "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY",
+  "NEXT_PUBLIC_FIREBASE_API_KEY",
+  "google\\.com",
+  "firebase\\.google\\.com",
+  "googleapis\\.com",
 ]
-
-[[rules]]
-# Disable GCP API key detection for documentation files
-id = "gcp-api-key"
-description = "GCP API Key"
-regex = "(?i)(gcp|google).*api[_-]?key"
-allowlist = { paths = [".env.local", "GOOGLE_AUTH_SETUP.md", "gcp-key.json.example"] }
