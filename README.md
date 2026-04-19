@@ -36,7 +36,47 @@ npm run lint             # 0 errors
 
 ---
 
-## �🏆 Evaluation Highlights (100% Parameter Coverage)
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ and npm
+- Google Cloud Project with billing enabled
+- Firebase project
+
+### 1. Clone and Install
+```bash
+git clone https://github.com/sujithputta02/CrowdGo.git
+cd CrowdGo
+npm install --legacy-peer-deps
+```
+
+### 2. Set Up Authentication
+```bash
+# Copy environment template
+cp .env.local.example .env.local
+
+# Set up Google Cloud credentials (see GOOGLE_AUTH_SETUP.md)
+# This creates gcp-key.json with your service account credentials
+```
+
+📋 **[Detailed Authentication Setup Guide](./GOOGLE_AUTH_SETUP.md)**
+
+### 3. Run Development Server
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000` to see CrowdGo in action!
+
+### 4. Run Tests
+```bash
+npm test                 # All 540 tests
+npm test -- --coverage  # With coverage report
+```
+
+---
+
+## 🏆 Evaluation Highlights (100% Parameter Coverage)
 
 ### 1. Google Services Integration
 - **Vertex AI (Gemini 1.5 Flash)**: Acts as the "Aura Brain," translating raw BigQuery trends into natural-language navigation tips via our `GeminiService`.
