@@ -16,6 +16,8 @@ coverage/
 # Secrets & Keys
 *-key.json
 *.key
+gcp-key.json
+service-account-key.json
 secrets.json
 .env*
 .env.local
