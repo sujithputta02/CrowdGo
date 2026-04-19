@@ -1,114 +1,53 @@
-# Google Authentication Setup Guide
+# Google Cloud Authentication Setup
 
-## Issue
-"Google sync failed. Manual entry required" error when attempting Google login.
+## Overview
+This project requires Google Cloud service account credentials for BigQuery and other GCP services.
 
-## Root Cause
-Google OAuth provider is not configured in Firebase Console for your project.
+## Setup Instructions
 
-## Solution
+### 1. Create Service Account
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Navigate to **IAM & Admin** → **Service Accounts**
+3. Click **"CREATE SERVICE ACCOUNT"**
+4. Fill in:
+   - **Service account name**: `crowdgo-service`
+   - **Service account ID**: `crowdgo-service`
+5. Click **"CREATE AND CONTINUE"**
 
-### Step 1: Enable Google Sign-In in Firebase Console
+### 2. Grant Required Roles
+Add these roles to your service account:
+- `BigQuery User`
+- `BigQuery Data Viewer`
+- `Service Account Token Creator`
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project: **crowdgo-493512**
-3. Navigate to **Authentication** → **Sign-in method**
-4. Click on **Google**
-5. Toggle **Enable** to ON
-6. Select a **Project support email** (your email)
-7. Click **Save**
+### 3. Create and Download Key
+1. Click on your service account
+2. Go to **"KEYS"** tab
+3. Click **"ADD KEY"** → **"Create new key"**
+4. Choose **JSON** format
+5. Click **"CREATE"**
 
-### Step 2: Configure OAuth Consent Screen (Google Cloud Console)
+### 4. Install Key File
+1. Rename the downloaded file to `gcp-key.json`
+2. Place it in your project root (same level as `package.json`)
+3. **NEVER commit this file to git** - it's already in `.gitignore`
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Select project: **crowdgo-493512**
-3. Navigate to **APIs & Services** → **OAuth consent screen**
-4. Select **External** user type
-5. Fill in the form:
-   - **App name**: CrowdGo
-   - **User support email**: your-email@gmail.com
-   - **Developer contact**: your-email@gmail.com
-6. Click **Save and Continue**
-7. On **Scopes** page, add these scopes:
-   - `openid`
-   - `email`
-   - `profile`
-8. Click **Save and Continue**
-9. On **Test users** page, add your email as a test user
-10. Click **Save and Continue**
+### 5. Verify Setup
+The file should look like the example in `gcp-key.json.example` but with your real credentials.
 
-### Step 3: Configure Authorized Redirect URIs
+## Security Notes
+- The `gcp-key.json` file contains sensitive credentials
+- It's automatically ignored by git (see `.gitignore`)
+- Never share or commit this file
+- Each developer needs their own service account key
 
-1. In Google Cloud Console, go to **APIs & Services** → **Credentials**
-2. Find your **OAuth 2.0 Client ID** (Web application)
-3. Click on it to edit
-4. Add these **Authorized redirect URIs**:
-   ```
-   http://localhost:3000/__/auth/handler
-   https://crowdgo-493512.firebaseapp.com/__/auth/handler
-   https://your-production-domain.com/__/auth/handler
-   ```
-5. Click **Save**
-
-### Step 4: Verify Firebase Configuration
-
-Your `.env.local` should have:
+## Environment Variables Alternative
+Instead of a file, you can also use environment variables:
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/gcp-key.json"
 ```
-NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_API_KEY_HERE
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=crowdgo-493512.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=crowdgo-493512
-NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_APP_ID_HERE
-```
-
-**Note**: Never commit actual API keys to version control. Use environment variables instead.
-
-### Step 5: Test Google Login
-
-1. Start your development server: `npm run dev`
-2. Go to http://localhost:3000/login
-3. Click **Login with Google**
-4. You should see the Google sign-in popup
-5. Sign in with your test account
 
 ## Troubleshooting
-
-### "Popup blocked" error
-- Check browser popup settings
-- Allow popups for localhost:3000
-
-### "Unauthorized domain" error
-- Add your domain to authorized redirect URIs in Google Cloud Console
-- Wait 5-10 minutes for changes to propagate
-
-### "Operation not supported in this environment" error
-- Ensure you're using HTTPS in production
-- Check that Firebase is properly initialized
-
-### Still getting "Google sync failed"?
-1. Clear browser cache and cookies
-2. Try in an incognito window
-3. Check browser console for detailed error messages
-4. Verify all Firebase credentials in `.env.local`
-
-## Email Login Fallback
-
-If Google login continues to fail, users can:
-1. Use **Email/Password** login
-2. Use **Experience Anonymously** option
-3. Sign up with email at `/signup`
-
-## Production Deployment
-
-Before deploying to production:
-
-1. Update authorized redirect URIs with your production domain
-2. Move OAuth consent screen from **External** to **Internal** (if using company domain)
-3. Test Google login on production domain
-4. Monitor Firebase Authentication logs for errors
-
-## Support
-
-For Firebase authentication issues:
-- [Firebase Auth Documentation](https://firebase.google.com/docs/auth)
-- [Google OAuth Setup Guide](https://developers.google.com/identity/protocols/oauth2)
-- [Firebase Console](https://console.firebase.google.com/)
+- Ensure your service account has the required permissions
+- Verify the JSON file is valid
+- Check that BigQuery API is enabled in your project

@@ -7,12 +7,17 @@ paths = [
   ".env.local",
   ".env.example", 
   "GOOGLE_AUTH_SETUP.md",
+  "gcp-key.json.example",
 ]
 
 # Ignore specific patterns that are not actual secrets
 regexes = [
   # Firebase public API keys (safe to expose, used in client-side code)
   "AIzaSy[A-Za-z0-9_-]{33}",
+  # Example/template values
+  "your-project-id",
+  "YOUR_PRIVATE_KEY_HERE",
+  "your-service-account@your-project",
 ]
 
 [[rules]]
@@ -20,4 +25,4 @@ regexes = [
 id = "gcp-api-key"
 description = "GCP API Key"
 regex = "(?i)(gcp|google).*api[_-]?key"
-allowlist = { paths = [".env.local", "GOOGLE_AUTH_SETUP.md"] }
+allowlist = { paths = [".env.local", "GOOGLE_AUTH_SETUP.md", "gcp-key.json.example"] }
