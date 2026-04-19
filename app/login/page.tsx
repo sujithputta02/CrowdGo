@@ -62,14 +62,27 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
+      // Configure Google provider with additional scopes
+      googleProvider.addScope('profile');
+      googleProvider.addScope('email');
+      
       const result = await signInWithPopup(auth, googleProvider);
       router.push('/main');
     } catch (err: unknown) {
-      const error = err as { code?: string };
+      const error = err as { code?: string; message?: string };
+      
       if (error.code === 'auth/account-exists-with-different-credential') {
         setError('Email already linked to another method. Try Email login.');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('Popup blocked. Please allow popups and try again.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('Login cancelled. Try again.');
+      } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+        setError('Google login not available. Use email login instead.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for Google login. Contact support.');
       } else {
-        setError('Google sync failed. Try manual login.');
+        setError('Google sync failed. Try manual email login instead.');
       }
     } finally {
       setLoading(false);

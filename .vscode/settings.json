@@ -10,5 +10,7 @@
   "python.interpreterPath": "/usr/bin/python3",
   "python.analysis.extraPaths": [
     "/Users/sujithputta/Library/Python/3.9/lib/python/site-packages"
-  ]
+  ],
+  "json.schemaDownload.enable": false,
+  "json.schemas": []
 }
