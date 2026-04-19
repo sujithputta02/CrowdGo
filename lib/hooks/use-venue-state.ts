@@ -14,11 +14,25 @@ export function useVenueState() {
 
   useEffect(() => {
     const venueRef = doc(db, "venues", "wankhede");
-    const unsubscribe = onSnapshot(venueRef, (doc) => {
-      if (doc.exists()) {
-        setVenueData(doc.data() as VenueState);
+    const unsubscribe = onSnapshot(
+      venueRef,
+      (doc) => {
+        if (doc.exists()) {
+          setVenueData(doc.data() as VenueState);
+        }
+      },
+      (error) => {
+        // Handle connection errors gracefully
+        if (error.code === 'permission-denied') {
+          logger.warn('Firestore permission denied for venues/wankhede');
+        } else if (error.code === 'unavailable') {
+          logger.warn('Firestore temporarily unavailable, will retry automatically');
+        } else {
+          logger.warn('Firestore listener error', { error: error.message });
+        }
+        // Don't throw - let Firestore handle reconnection automatically
       }
-    });
+    );
 
     return () => unsubscribe();
   }, []);

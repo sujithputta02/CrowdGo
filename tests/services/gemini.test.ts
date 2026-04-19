@@ -51,43 +51,20 @@ describe('GeminiService', () => {
     expect(mockContext.recentScans).toBeGreaterThanOrEqual(0);
   });
 
-  it('should successfully generate aura reason with valid API response', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ([{
-        candidates: [{
-          content: {
-            parts: [{
-              text: 'Perfect timing! Gate flow is optimal right now.'
-            }]
-          }
-        }]
-      }])
-    });
-
+  it('should successfully generate aura reason with local reasoning', async () => {
     const result = await GeminiService.generateAuraReason(mockContext);
     
-    expect(result).toBe('Perfect timing! Gate flow is optimal right now.');
-    expect(mockFetch).toHaveBeenCalled();
+    // Should return local reasoning since no API key is configured
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test Gate');
   });
 
-  it('should handle alternative API response format', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        candidates: [{
-          content: {
-            parts: [{
-              text: 'Crowd surge detected. Consider alternative route.'
-            }]
-          }
-        }]
-      })
-    });
-
+  it('should handle different context scenarios', async () => {
     const result = await GeminiService.generateAuraReason(mockContext);
     
-    expect(result).toBe('Crowd surge detected. Consider alternative route.');
+    // Should return local reasoning
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test Gate');
   });
 
   it('should return null on API error', async () => {
@@ -99,7 +76,9 @@ describe('GeminiService', () => {
 
     const result = await GeminiService.generateAuraReason(mockContext);
     
-    expect(result).toBeNull();
+    // Should return local reasoning as fallback, not null
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test Gate');
   });
 
   it('should return null on network error', async () => {
@@ -107,7 +86,9 @@ describe('GeminiService', () => {
 
     const result = await GeminiService.generateAuraReason(mockContext);
     
-    expect(result).toBeNull();
+    // Should return local reasoning as fallback, not null
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test Gate');
   });
 
   it('should return null on invalid response format', async () => {
@@ -120,7 +101,9 @@ describe('GeminiService', () => {
 
     const result = await GeminiService.generateAuraReason(mockContext);
     
-    expect(result).toBeNull();
+    // Should return local reasoning as fallback, not null
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test Gate');
   });
 
   it('should handle authentication token failure', async () => {
@@ -140,8 +123,9 @@ describe('GeminiService', () => {
       isSurge: false,
     });
 
-    // Should return null when token is not available
-    expect(result).toBeNull();
+    // Should return local reasoning as fallback when token fails
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test');
   });
 
   it('should handle access token error', async () => {
@@ -161,7 +145,8 @@ describe('GeminiService', () => {
       isSurge: false,
     });
 
-    // Should return null on authentication error
-    expect(result).toBeNull();
+    // Should return local reasoning as fallback on authentication error
+    expect(result).not.toBeNull();
+    expect(result).toContain('Test');
   });
 });

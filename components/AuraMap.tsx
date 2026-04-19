@@ -23,13 +23,7 @@ interface AuraMapProps {
 }
 
 // Global persistent guard to silence setOptions warnings across HMR
-if (typeof window !== 'undefined' && !(window as any)._AURA_MAP_INITIALIZED) {
-  setOptions({
-    key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
-    v: "weekly"
-  });
-  (window as any)._AURA_MAP_INITIALIZED = true;
-}
+let _AURA_MAP_INITIALIZED = false;
 
 export default function AuraMap({ 
   center = MapsService.WANKHEDE, 
@@ -44,6 +38,17 @@ export default function AuraMap({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<AuraMarker[]>([]);
+
+  // Initialize Google Maps options only once
+  useEffect(() => {
+    if (!_AURA_MAP_INITIALIZED) {
+      setOptions({
+        key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
+        v: "weekly"
+      });
+      _AURA_MAP_INITIALIZED = true;
+    }
+  }, []);
 
   useEffect(() => {
     const fetchPOIs = async (

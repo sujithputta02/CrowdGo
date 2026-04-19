@@ -52,9 +52,13 @@ export default function TicketPage() {
             <div className="flex justify-center mb-12">
                <div className="w-48 h-48 border-[12px] border-black p-2 rounded-2xl relative overflow-hidden">
                   <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-1">
-                     {Array.from({ length: 16 }).map((_, i) => (
-                       <div key={i} className={`rounded-sm ${Math.random() > 0.4 ? 'bg-black' : 'bg-transparent'}`} />
-                     ))}
+                     {Array.from({ length: 16 }).map((_, i) => {
+                       // Use deterministic pattern instead of Math.random() to avoid hydration mismatch
+                       const isBlack = (i + Math.floor(i / 4)) % 3 !== 0;
+                       return (
+                         <div key={i} className={`rounded-sm ${isBlack ? 'bg-black' : 'bg-transparent'}`} />
+                       );
+                     })}
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-12 h-12 bg-white flex items-center justify-center shadow-lg border border-black/5">

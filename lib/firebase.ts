@@ -19,6 +19,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Note: Firestore persistence is handled automatically by Firebase SDK
+// in the browser. The deprecated enableIndexedDbPersistence() is no longer needed.
+
 // Configure Google Provider
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('profile');

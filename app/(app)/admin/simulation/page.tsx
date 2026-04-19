@@ -58,6 +58,9 @@ export default function SimulationDashboard() {
     }
   }, [isFlooding]);
 
+  // Use a counter for deterministic simulation instead of Math.random()
+  const [simulationCounter, setSimulationCounter] = useState(0);
+
   const fireEvent = async (type: string, payload: any, fromFlood: boolean = false) => {
     if (!fromFlood) setLoading(true);
     setSuccess(null);
@@ -70,6 +73,9 @@ export default function SimulationDashboard() {
       
       const base64Data = btoa(JSON.stringify(eventData));
       
+      // Use deterministic message ID based on timestamp and counter
+      const messageId = `sim_${Date.now()}_${simulationCounter}`;
+      
       const response = await fetch('/api/v1/ingest', {
         method: 'POST',
         headers: {
@@ -79,14 +85,17 @@ export default function SimulationDashboard() {
         body: JSON.stringify({
           message: {
             data: base64Data,
-            messageId: Math.random().toString(36).substring(7),
+            messageId: messageId,
             publishTime: new Date().toISOString()
           }
         })
       });
 
       if (response.ok) {
-        if (fromFlood) setEventsSent(prev => prev + 1);
+        if (fromFlood) {
+          setEventsSent(prev => prev + 1);
+          setSimulationCounter(prev => prev + 1);
+        }
         if (!fromFlood) {
           setSuccess(`Event Sent: ${type}`);
           setTimeout(() => setSuccess(null), 3000);
@@ -112,6 +121,7 @@ export default function SimulationDashboard() {
 
     setIsFlooding(true);
     setEventsSent(0);
+    setSimulationCounter(0);
     setSuccess("IPL Match Simulation Running...");
     
     floodIntervalRef.current = setInterval(() => {
@@ -119,11 +129,18 @@ export default function SimulationDashboard() {
       const gates = ['gate-1', 'gate-3', 'gate-5'];
       const hubs = ['food-1', 'food-2', 'churchgate'];
       
-      const randomType = types[Math.floor(Math.random() * types.length)];
+      // Use deterministic selection based on counter instead of Math.random()
+      const currentCounter = simulationCounter;
+      const typeIndex = currentCounter % types.length;
+      const randomType = types[typeIndex];
+      
       if (randomType === 'GATE_SCAN') {
-        fireEvent('GATE_SCAN', { gateId: gates[Math.floor(Math.random() * gates.length)] }, true);
+        const gateIndex = currentCounter % gates.length;
+        fireEvent('GATE_SCAN', { gateId: gates[gateIndex] }, true);
       } else {
-        fireEvent('POS_SALE', { hubId: hubs[Math.floor(Math.random() * hubs.length)], amount: Math.floor(Math.random() * 50) + 10 }, true);
+        const hubIndex = currentCounter % hubs.length;
+        const amount = (currentCounter % 40) + 10; // Deterministic amount between 10-50
+        fireEvent('POS_SALE', { hubId: hubs[hubIndex], amount }, true);
       }
     }, 600);
   };
