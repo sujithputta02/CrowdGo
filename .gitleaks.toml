@@ -9,8 +9,8 @@ paths = [
   "GOOGLE_AUTH_SETUP.md",
   "SECURITY_NOTICE.md",
   "SECRET_SCANNING_RESOLUTION.md",
+  "GITLEAKS_FIX_SUMMARY.md",
   "gcp-key.json.example",
-  "**/*.md",
 ]
 
 # Ignore specific patterns that are not actual secrets
@@ -23,10 +23,7 @@ regexes = [
   "your-service-account@your-project",
   "your-firebase-api-key",
   "your-google-maps-api-key",
-  # Documentation references
+  # Documentation references (not actual secrets)
   "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY",
   "NEXT_PUBLIC_FIREBASE_API_KEY",
-  "google\\.com",
-  "firebase\\.google\\.com",
-  "googleapis\\.com",
 ]
