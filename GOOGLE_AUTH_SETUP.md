@@ -60,6 +60,8 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=crowdgo-493512
 NEXT_PUBLIC_FIREBASE_APP_ID=YOUR_APP_ID_HERE
 ```
 
+**Note**: Never commit actual API keys to version control. Use environment variables instead.
+
 ### Step 5: Test Google Login
 
 1. Start your development server: `npm run dev`
