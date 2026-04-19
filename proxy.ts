@@ -28,17 +28,21 @@ function generateNonce(): string {
 
 /**
  * Build Content Security Policy with nonce
+ * 
+ * Note: We use 'unsafe-inline' instead of 'strict-dynamic' because:
+ * 1. Next.js dynamically loads chunks from _next/static/ without nonces
+ * 2. 'strict-dynamic' requires all scripts to be loaded by nonce-tagged scripts
+ * 3. Firebase Hosting doesn't support adding nonces to Next.js chunks
+ * 4. 'unsafe-inline' with nonce still provides good protection for inline scripts
  */
 function buildCSP(nonce: string): string {
   const isDevelopment = process.env.NODE_ENV === 'development';
   
   // In development, React requires 'unsafe-eval' for debugging features
-  // In production, we use strict CSP without eval
-  // Note: 'unsafe-inline' is added as a fallback for browsers that don't support 'strict-dynamic'
-  // When 'strict-dynamic' is supported, 'unsafe-inline' is ignored
+  // In production, we use CSP with 'unsafe-inline' to allow Next.js chunks
   const scriptSrc = isDevelopment
-    ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' 'nonce-${nonce}' 'strict-dynamic' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`
-    : `script-src 'self' 'unsafe-inline' 'nonce-${nonce}' 'strict-dynamic' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`;
+    ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' 'nonce-${nonce}' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`
+    : `script-src 'self' 'unsafe-inline' 'nonce-${nonce}' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`;
   
   const directives = [
     "default-src 'self'",
