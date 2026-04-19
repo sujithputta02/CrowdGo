@@ -10,7 +10,7 @@ import { logger } from './logger';
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'crowdgo-493512';
 const LOCATION = 'us-central1';
-const MODEL_ID = 'gemini-1.5-flash-001';
+const MODEL_ID = 'gemini-1.5-flash';
 
 export const GeminiService = {
   /**
