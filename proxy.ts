@@ -34,9 +34,11 @@ function buildCSP(nonce: string): string {
   
   // In development, React requires 'unsafe-eval' for debugging features
   // In production, we use strict CSP without eval
+  // Note: 'unsafe-inline' is added as a fallback for browsers that don't support 'strict-dynamic'
+  // When 'strict-dynamic' is supported, 'unsafe-inline' is ignored
   const scriptSrc = isDevelopment
-    ? `script-src 'self' 'unsafe-eval' 'nonce-${nonce}' 'strict-dynamic' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`
-    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`;
+    ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' 'nonce-${nonce}' 'strict-dynamic' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`
+    : `script-src 'self' 'unsafe-inline' 'nonce-${nonce}' 'strict-dynamic' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`;
   
   const directives = [
     "default-src 'self'",
