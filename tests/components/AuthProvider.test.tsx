@@ -267,4 +267,30 @@ describe('AuthProvider', () => {
     
     expect(container).toBeInTheDocument();
   });
+
+  it('should handle logout', () => {
+    const { onAuthStateChanged } = require('firebase/auth');
+    
+    let authCallback: any;
+    
+    onAuthStateChanged.mockImplementationOnce((_auth: any, callback: any) => {
+      authCallback = callback;
+      // First call with user
+      callback({ uid: 'logout-uid', email: 'logout@example.com' });
+      return jest.fn();
+    });
+
+    const { container } = render(
+      <AuthProvider>
+        <div>Logout Test</div>
+      </AuthProvider>
+    );
+    
+    // Simulate logout
+    if (authCallback) {
+      authCallback(null);
+    }
+    
+    expect(container).toBeInTheDocument();
+  });
 });

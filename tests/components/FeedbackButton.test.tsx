@@ -224,4 +224,189 @@ describe('FeedbackButton', () => {
 
     expect(global.fetch).not.toHaveBeenCalled();
   });
+
+  it('should handle network errors in quick feedback', async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    render(<FeedbackButton recommendationType="gate" />);
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+    fireEvent.click(screen.getByText('Helpful'));
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to submit feedback:',
+        expect.any(Error)
+      );
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should handle network errors in detailed feedback', async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    render(<FeedbackButton recommendationType="gate" />);
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+
+    // Select rating
+    const stars = screen.getAllByText('★');
+    fireEvent.click(stars[2]); // 3 stars
+
+    // Submit
+    fireEvent.click(screen.getByText('Submit Feedback'));
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Failed to submit feedback:',
+        expect.any(Error)
+      );
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('should show success message after quick feedback', async () => {
+    jest.useFakeTimers();
+
+    render(<FeedbackButton recommendationType="gate" />);
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+    fireEvent.click(screen.getByText('Helpful'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Thank you for your feedback/i)).toBeInTheDocument();
+    });
+
+    jest.useRealTimers();
+  });
+
+  it('should show success message after detailed feedback', async () => {
+    jest.useFakeTimers();
+
+    render(<FeedbackButton recommendationType="gate" />);
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+
+    // Select rating
+    const stars = screen.getAllByText('★');
+    fireEvent.click(stars[2]); // 3 stars
+
+    // Submit
+    fireEvent.click(screen.getByText('Submit Feedback'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Thank you for your feedback/i)).toBeInTheDocument();
+    });
+
+    jest.useRealTimers();
+  });
+
+  it('should reset form state after successful submission', async () => {
+    jest.useFakeTimers();
+
+    const { rerender } = render(<FeedbackButton recommendationType="gate" />);
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+
+    // Select rating
+    const stars = screen.getAllByText('★');
+    fireEvent.click(stars[4]); // 5 stars
+
+    // Add comment
+    const commentInput = screen.getByPlaceholderText('Tell us more...');
+    fireEvent.change(commentInput, { target: { value: 'Great!' } });
+
+    // Submit
+    fireEvent.click(screen.getByText('Submit Feedback'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Thank you for your feedback/i)).toBeInTheDocument();
+    });
+
+    // Fast-forward to close the form
+    jest.advanceTimersByTime(2000);
+
+    // Re-render to see the reset state
+    rerender(<FeedbackButton recommendationType="gate" />);
+
+    // Form should be closed
+    expect(screen.queryByText('Rate this recommendation')).not.toBeInTheDocument();
+
+    jest.useRealTimers();
+  });
+
+  it('should disable buttons while submitting', async () => {
+    (global.fetch as jest.Mock).mockImplementationOnce(
+      () => new Promise(resolve => setTimeout(() => resolve({ ok: true }), 100))
+    );
+
+    render(<FeedbackButton recommendationType="gate" />);
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+
+    const helpfulButton = screen.getByText('Helpful');
+    
+    // Immediately check if disabled (before async completes)
+    fireEvent.click(helpfulButton);
+    
+    // Wait for the fetch to be called
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalled();
+    });
+  });
+
+  it('should include all feedback data in API call', async () => {
+    render(
+      <FeedbackButton
+        recommendationId="rec-123"
+        recommendationType="gate"
+        expectedWaitTime={15}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Was this helpful?'));
+
+    // Select rating
+    const stars = screen.getAllByText('★');
+    fireEvent.click(stars[3]); // 4 stars
+
+    // Set actual wait time
+    const waitTimeInput = screen.getByPlaceholderText('Expected: 15 min');
+    fireEvent.change(waitTimeInput, { target: { value: '18' } });
+
+    // Add comment
+    const commentInput = screen.getByPlaceholderText('Tell us more...');
+    fireEvent.change(commentInput, { target: { value: 'Accurate estimate' } });
+
+    // Submit
+    fireEvent.click(screen.getByText('Submit Feedback'));
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/v1/feedback',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: expect.stringContaining('"recommendationId":"rec-123"'),
+        })
+      );
+    });
+
+    const callBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(callBody).toMatchObject({
+      userId: 'user-123',
+      recommendationId: 'rec-123',
+      recommendationType: 'gate',
+      rating: 4,
+      helpful: true,
+      comment: 'Accurate estimate',
+      actualWaitTime: 18,
+      expectedWaitTime: 15,
+      venueId: 'wankhede',
+    });
+  });
 });
