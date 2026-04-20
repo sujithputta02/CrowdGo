@@ -2,6 +2,14 @@
 
 **CrowdGo** is a production-grade crowd-flow and navigation platform designed for the IPL season at Wankhede Stadium. It utilizes a sophisticated **"Aura Flow"** engine to predict surges and provide fans with real-time, AI-articulated navigation paths.
 
+## 🌐 Live Deployment
+
+**🚀 Production URL:** [https://crowdgo-493512.web.app](https://crowdgo-493512.web.app)
+
+**Alternative URL:** [https://crowdgo-493512.firebaseapp.com](https://crowdgo-493512.firebaseapp.com)
+
+**Status:** ✅ Live and Operational
+
 ---
 
 ## � 100% Code Quality Achievement
@@ -321,6 +329,19 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
 
 ## 🚀 Deployment
 
+### Live Production Deployment
+
+**🌐 Production URL:** [https://crowdgo-493512.web.app](https://crowdgo-493512.web.app)
+
+The application is deployed on Firebase Hosting with:
+- ✅ Cloud Functions (2nd Gen) for server-side rendering
+- ✅ Firebase Authentication
+- ✅ Firestore Database
+- ✅ Google Cloud integrations (BigQuery, Vertex AI, Maps)
+- ✅ CDN distribution
+- ✅ SSL/TLS encryption
+- ✅ Automatic scaling
+
 ### Production Checklist
 
 - [x] All tests passing (205/205)
@@ -334,15 +355,20 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
 - [x] Documentation complete
 - [x] Accessibility compliant
 
-### Deploy to Vercel
+### Deploy to Firebase
+
+The application is currently deployed to Firebase Hosting. To deploy updates:
 
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+# Run the deployment script
+./firebase-deploy.sh
 
-# Deploy
-vercel --prod
+# Or deploy manually
+npm run build
+firebase deploy --only hosting
 ```
+
+**Current Deployment:** [https://crowdgo-493512.web.app](https://crowdgo-493512.web.app)
 
 ---
 
