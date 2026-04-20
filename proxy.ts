@@ -27,22 +27,23 @@ function generateNonce(): string {
 }
 
 /**
- * Build Content Security Policy with nonce
+ * Build Content Security Policy without nonce
  * 
- * Note: We use 'unsafe-inline' instead of 'strict-dynamic' because:
- * 1. Next.js dynamically loads chunks from _next/static/ without nonces
- * 2. 'strict-dynamic' requires all scripts to be loaded by nonce-tagged scripts
- * 3. Firebase Hosting doesn't support adding nonces to Next.js chunks
- * 4. 'unsafe-inline' with nonce still provides good protection for inline scripts
+ * Note: We cannot use nonces with Next.js on Firebase Hosting because:
+ * 1. When a nonce is present, 'unsafe-inline' is IGNORED by browsers
+ * 2. Next.js generates inline scripts without nonces
+ * 3. Firebase Hosting cannot inject nonces into Next.js generated scripts
+ * 4. Therefore, we use 'unsafe-inline' without nonce for compatibility
  */
 function buildCSP(nonce: string): string {
   const isDevelopment = process.env.NODE_ENV === 'development';
   
   // In development, React requires 'unsafe-eval' for debugging features
-  // In production, we use CSP with 'unsafe-inline' to allow Next.js chunks
+  // In production, we use CSP with 'unsafe-inline' to allow Next.js inline scripts
+  // Note: No nonce is used because it would cause 'unsafe-inline' to be ignored
   const scriptSrc = isDevelopment
-    ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' 'nonce-${nonce}' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`
-    : `script-src 'self' 'unsafe-inline' 'nonce-${nonce}' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`;
+    ? `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`
+    : `script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.google.com https://apis.google.com https://www.googletagmanager.com`;
   
   const directives = [
     "default-src 'self'",
